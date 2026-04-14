@@ -32,3 +32,15 @@ class TestRecord(Base):
     total_count = Column(Integer, nullable=False)
     vocabulary_size = Column(Integer, nullable=False)
     level = Column(String(20), nullable=False)
+
+
+class WrongWord(Base):
+    __tablename__ = 'wrong_words'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    word = Column(String(50), nullable=False)
+    phonetic = Column(String(100))
+    meaning = Column(String(200), nullable=False)
+    difficulty = Column(String(20), nullable=False)
+    wrong_count = Column(Integer, default=1)
+    last_wrong_date = Column(DateTime(timezone=True), server_default=func.now())

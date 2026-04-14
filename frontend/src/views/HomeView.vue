@@ -18,12 +18,30 @@
         <router-link to="/profile" class="btn">进入中心</router-link>
       </div>
     </div>
-    <div class="auth-buttons">
+    <div class="auth-buttons" v-if="!userStore.isLoggedIn">
       <router-link to="/login" class="btn">登录</router-link>
       <router-link to="/register" class="btn">注册</router-link>
     </div>
+    <div class="auth-buttons" v-else>
+      <span>欢迎，{{ userStore.user?.username }}</span>
+      <router-link to="/profile" class="btn">个人中心</router-link>
+      <router-link to="/admin" class="btn">后台管理</router-link>
+      <button @click="handleLogout" class="btn">退出登录</button>
+    </div>
   </div>
 </template>
+
+<script setup>
+import { useUserStore } from '../stores/user'
+
+const userStore = useUserStore()
+
+const handleLogout = () => {
+  userStore.logout()
+  // 刷新页面，更新UI
+  window.location.reload()
+}
+</script>
 
 <style scoped>
 .home {
