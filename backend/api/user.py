@@ -6,7 +6,7 @@ from models.models import User
 from utils.jwt_utils import generate_token, verify_token
 from flask import request
 
-engine = create_engine('sqlite:///../database/vocab.db')
+engine = create_engine('sqlite:///database/vocab.db')
 Session = sessionmaker(bind=engine)
 
 

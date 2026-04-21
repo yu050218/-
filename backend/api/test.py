@@ -8,7 +8,7 @@ from flask import request
 import random
 from datetime import datetime
 
-engine = create_engine('sqlite:///../database/vocab.db')
+engine = create_engine('sqlite:///database/vocab.db')
 Session = sessionmaker(bind=engine)
 
 # 测试会话管理
@@ -25,7 +25,8 @@ class TestStart(Resource):
             print(f"Request json: {request.json}")
 
             # 直接从request.json获取数据，而不是使用reqparse
-            if not request.json:
+            # 允许空JSON对象
+            if request.json is None:
                 return {'message': 'No JSON data provided'}, 400
 
             # 生成测试会话ID
@@ -227,21 +228,32 @@ class TestSubmit(Resource):
                 
                 # 保存测试记录（如果用户已登录）
                 auth_header = request.headers.get('Authorization')
+                print(f"Auth header: {auth_header}")
                 if auth_header:
-                    token = auth_header.split(' ')[1] if len(auth_header.split(' ')) > 1 else auth_header
-                    user_id = verify_token(token)
-                    if user_id:
-                        session = Session()
-                        test_record = TestRecord(
-                            user_id=user_id,
-                            correct_count=session_data['correct_count'],
-                            total_count=session_data['current_question'],
-                            vocabulary_size=result['vocabulary_size'],
-                            level=result['level']
-                        )
-                        session.add(test_record)
-                        session.commit()
-                        session.close()
+                    try:
+                        token = auth_header.split(' ')[1] if len(auth_header.split(' ')) > 1 else auth_header
+                        print(f"Token: {token}")
+                        user_id = verify_token(token)
+                        print(f"User ID: {user_id}")
+                        if user_id:
+                            session = Session()
+                            test_record = TestRecord(
+                                user_id=user_id,
+                                correct_count=session_data['correct_count'],
+                                total_count=session_data['current_question'],
+                                vocabulary_size=result['vocabulary_size'],
+                                level=result['level']
+                            )
+                            session.add(test_record)
+                            session.commit()
+                            print(f"Test record saved for user {user_id}")
+                            session.close()
+                        else:
+                            print("Invalid user ID from token")
+                    except Exception as e:
+                        print(f"Error saving test record: {e}")
+                else:
+                    print("No authorization header found")
 
                 # 删除会话
                 del test_sessions[session_id]
@@ -251,7 +263,7 @@ class TestSubmit(Resource):
                 }, 200
 
 
-class TestRecord(Resource):
+class TestRecordResource(Resource):
     def get(self):
         # 从请求头获取JWT令牌
         auth_header = request.headers.get('Authorization')
@@ -269,7 +281,7 @@ class TestRecord(Resource):
 
         return [{
             'id': record.id,
-            'test_date': record.test_date,
+            'test_date': record.test_date.isoformat() if record.test_date else None,
             'correct_count': record.correct_count,
             'total_count': record.total_count,
             'vocabulary_size': record.vocabulary_size,
@@ -310,6 +322,8 @@ def generate_question(correct_word):
     
     # 构建选项列表
     options = [correct_word['meaning']] + [d['meaning'] for d in distractors]
+    # 添加"不认识"选项
+    options.append('不认识')
     
     # 随机打乱选项顺序
     random.shuffle(options)

@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from models.models import WrongWord
 from datetime import datetime
 
-engine = create_engine('sqlite:///../database/vocab.db')
+engine = create_engine('sqlite:///database/vocab.db')
 Session = sessionmaker(bind=engine)
 
 # 匹配队列，存储用户ID和加入时间

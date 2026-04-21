@@ -24,7 +24,7 @@
     <!-- 历史趋势图 -->
     <div class="history-chart">
       <h2>历史测试趋势</h2>
-      <canvas ref="chartCanvas"></canvas>
+      <canvas ref="chartCanvas" id="chartCanvas"></canvas>
     </div>
     
     <!-- 历史测试记录 -->
@@ -74,9 +74,9 @@ const userStore = useUserStore()
 const chartCanvas = ref(null)
 let chart = null
 
-// 只显示最近3次的测试记录
+// 只显示最近10次的测试记录
 const recentTestRecords = computed(() => {
-  return testStore.testRecords.slice(0, 3)
+  return testStore.testRecords.slice(0, 10)
 })
 
 const formatDate = (dateString) => {
@@ -86,7 +86,14 @@ const formatDate = (dateString) => {
 
 const loadTestRecords = async () => {
   if (userStore.token) {
-    await testStore.getTestRecords(userStore.token)
+    try {
+      await testStore.getTestRecords(userStore.token)
+      console.log('Test records loaded:', testStore.testRecords)
+    } catch (error) {
+      console.error('Error loading test records:', error)
+    }
+  } else {
+    console.log('No token, skipping test records load')
   }
 }
 
@@ -95,13 +102,15 @@ const createChart = () => {
   
   const ctx = chartCanvas.value.getContext('2d')
   
-  // 只取最近的测试记录（最多5次）
-  const recentRecords = testStore.testRecords.slice(0, 5).reverse()
+  // 只取最近的测试记录（最多10次）
+  const recentRecords = testStore.testRecords.slice(0, 10).reverse()
+  console.log('Recent test records for chart:', recentRecords)
   
   // 准备图表数据
   const labels = recentRecords.map(record => formatDate(record.test_date))
-  const vocabularyData = recentRecords.map(record => record.vocabulary_size)
   const correctRateData = recentRecords.map(record => (record.correct_count / record.total_count) * 100)
+  console.log('Chart labels:', labels)
+  console.log('Chart data:', correctRateData)
   
   // 销毁旧图表
   if (chart) {
@@ -119,12 +128,14 @@ const createChart = () => {
           data: correctRateData,
           borderColor: '#2196F3',
           backgroundColor: 'rgba(33, 150, 243, 0.1)',
-          tension: 0.4
+          tension: 0.4,
+          fill: true
         }
       ]
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         y: {
           type: 'linear',
@@ -133,7 +144,18 @@ const createChart = () => {
           title: {
             display: true,
             text: '正确率 (%)'
-          }
+          },
+          min: 0,
+          max: 100
+        }
+      },
+      plugins: {
+        legend: {
+          display: true
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
         }
       }
     }
@@ -198,11 +220,17 @@ onMounted(async () => {
 
 .history-chart {
   margin-bottom: 40px;
+  height: 400px;
 }
 
 .history-chart h2 {
   margin-bottom: 20px;
   color: #666;
+}
+
+#chartCanvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .history-records {

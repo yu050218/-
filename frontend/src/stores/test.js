@@ -36,10 +36,27 @@ export const useTestStore = defineStore('test', {
     async submitAnswer(word, answer) {
       try {
         console.log('Submitting answer:', { word, answer, sessionId: this.sessionId })
+        
+        // 构建请求头
+        const headers = {
+          'Content-Type': 'application/json'
+        }
+        // 从 localStorage 读取 token
+        const token = localStorage.getItem('token')
+        console.log('Retrieved token from localStorage:', token)
+        if (token) {
+          headers.Authorization = `Bearer ${token}`
+          console.log('Including authorization header:', headers.Authorization)
+        } else {
+          console.log('No token found, not including authorization header')
+        }
+        
         const response = await axios.post('/api/test/submit', {
           session_id: this.sessionId,
           word: word,
           answer: answer
+        }, {
+          headers: headers
         })
         console.log('Submit answer response:', response.data)
         if (response.data.question) {
@@ -52,6 +69,18 @@ export const useTestStore = defineStore('test', {
           this.currentWord = null
           localStorage.removeItem('testSessionId')
           console.log('Test completed, result:', this.testResult)
+          
+          // 测试完成后，重新加载测试记录
+          const token = localStorage.getItem('token')
+          console.log('Retrieved token for record reload:', token)
+          if (token) {
+            console.log('Reloading test records with token:', token)
+            this.getTestRecords(token).catch(error => {
+              console.error('Error loading test records after test completion:', error)
+            })
+          } else {
+            console.log('No token, skipping test records reload')
+          }
         }
         return response.data
       } catch (error) {
@@ -61,15 +90,18 @@ export const useTestStore = defineStore('test', {
     },
     async getTestRecords(token) {
       try {
+        console.log('Getting test records with token:', token)
         const response = await axios.get('/api/test/record', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         })
+        console.log('Test records response:', response.data)
         this.testRecords = response.data
         return response.data
       } catch (error) {
-        throw error.response.data
+        console.error('Error getting test records:', error)
+        throw error.response ? error.response.data : error
       }
     },
     async getWrongWords(token) {

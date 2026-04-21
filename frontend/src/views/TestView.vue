@@ -121,14 +121,25 @@ const submitAnswer = async (answer) => {
       timeoutPromise
     ])
     
-    isCorrect.value = response.is_correct
-    
-    // 延迟500毫秒后进入下一题
-    setTimeout(() => {
-      isAnswered.value = false
-      selectedAnswer.value = null
-      correctIndex.value = null
-    }, 500)
+    if (response.question) {
+      // 有下一个问题
+      isCorrect.value = response.is_correct
+      
+      // 延迟500毫秒后进入下一题
+      setTimeout(() => {
+        isAnswered.value = false
+        selectedAnswer.value = null
+        correctIndex.value = null
+      }, 500)
+    } else {
+      // 测试完成，跳转到报告页面
+      isAnswered.value = true
+      isCorrect.value = true // 显示正确答案的样式
+      
+      setTimeout(() => {
+        router.push('/report')
+      }, 1500)
+    }
   } catch (error) {
     console.error('Error submitting answer:', error)
     // 重置状态，避免卡死

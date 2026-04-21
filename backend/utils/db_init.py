@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from models.models import Base
 
 # 创建SQLite数据库引擎
-engine = create_engine('sqlite:///../database/vocab.db', echo=True)
+engine = create_engine('sqlite:///database/vocab.db', echo=True)
 
 # 创建所有表
 Base.metadata.create_all(engine)

@@ -7,7 +7,7 @@ from utils.excel_reader import load_words_from_excel
 from flask import request
 import os
 
-engine = create_engine('sqlite:///../database/vocab.db')
+engine = create_engine('sqlite:///database/vocab.db')
 Session = sessionmaker(bind=engine)
 
 
