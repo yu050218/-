@@ -100,6 +100,27 @@ class TestSubmit(Resource):
                 if is_correct:
                     session_data['correct_count'] += 1
                     session_data['consecutive_wrong'] = 0
+                    # 如果用户答对，且已登录，更新错题本
+                    auth_header = request.headers.get('Authorization')
+                    if auth_header:
+                        token = auth_header.split(' ')[1] if len(auth_header.split(' ')) > 1 else auth_header
+                        user_id = verify_token(token)
+                        if user_id:
+                            session = Session()
+                            # 检查错题是否已经存在
+                            existing_wrong_word = session.query(WrongWord).filter_by(
+                                user_id=user_id,
+                                word=current_question['word']
+                            ).first()
+                            if existing_wrong_word:
+                                # 如果错题已存在，增加正确次数
+                                existing_wrong_word.correct_count += 1
+                                existing_wrong_word.last_correct_date = datetime.now()
+                                # 如果答对次数达到10次，从错题本中移除
+                                if existing_wrong_word.correct_count >= 10:
+                                    session.delete(existing_wrong_word)
+                                session.commit()
+                            session.close()
                 else:
                     session_data['consecutive_wrong'] += 1
                     session_data['total_wrong'] += 1
@@ -128,7 +149,9 @@ class TestSubmit(Resource):
                                     meaning=current_question['options'][current_question['correct_index']],
                                     difficulty='medium',  # 暂时设置为中等难度
                                     wrong_count=1,
-                                    last_wrong_date=datetime.now()
+                                    correct_count=0,
+                                    last_wrong_date=datetime.now(),
+                                    last_correct_date=datetime.now()
                                 )
                                 session.add(wrong_word)
                             session.commit()
@@ -312,7 +335,9 @@ class WrongWords(Resource):
             'meaning': word.meaning,
             'difficulty': word.difficulty,
             'wrong_count': word.wrong_count,
-            'last_wrong_date': word.last_wrong_date
+            'correct_count': word.correct_count,
+            'last_wrong_date': word.last_wrong_date.isoformat() if word.last_wrong_date else None,
+            'last_correct_date': word.last_correct_date.isoformat() if word.last_correct_date else None
         } for word in wrong_words], 200
 
 

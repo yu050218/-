@@ -44,4 +44,6 @@ class WrongWord(Base):
     meaning = Column(String(200), nullable=False)
     difficulty = Column(String(20), nullable=False)
     wrong_count = Column(Integer, default=1)
+    correct_count = Column(Integer, default=0)  # 记录答对次数
     last_wrong_date = Column(DateTime(timezone=True), server_default=func.now())
+    last_correct_date = Column(DateTime(timezone=True), server_default=func.now())  # 记录最后答对日期
