@@ -78,7 +78,22 @@ const correctIndex = ref(null)
 
 // 组件挂载时重置测试结果，确保不显示上一次的报告
 onMounted(() => {
+  console.log('Component mounted, testStore:', testStore)
   testStore.testResult = null
+  testStore.sessionId = null
+  testStore.currentWord = null
+  localStorage.removeItem('testSessionId')
+  console.log('After reset, testStore.sessionId:', testStore.sessionId)
+  console.log('After reset, testStore.currentWord:', testStore.currentWord)
+})
+
+// 监听 testStore 的变化
+watch(() => testStore.currentWord, (newValue) => {
+  console.log('testStore.currentWord changed:', newValue)
+})
+
+watch(() => testStore.sessionId, (newValue) => {
+  console.log('testStore.sessionId changed:', newValue)
 })
 
 // 监听currentWord变化，重置状态
@@ -90,13 +105,20 @@ watch(() => testStore.currentWord, () => {
 })
 
 const startTest = async (testType) => {
-  // 重置测试结果，确保不显示上一次的报告
-  testStore.testResult = null
-  isAnswered.value = false
-  isCorrect.value = false
-  selectedAnswer.value = null
-  correctIndex.value = null
-  await testStore.startTest(testType)
+  try {
+    console.log('Starting test...')
+    // 重置测试结果，确保不显示上一次的报告
+    testStore.testResult = null
+    isAnswered.value = false
+    isCorrect.value = false
+    selectedAnswer.value = null
+    correctIndex.value = null
+    console.log('Calling testStore.startTest...')
+    await testStore.startTest(testType)
+    console.log('Test started successfully, currentWord:', testStore.currentWord)
+  } catch (error) {
+    console.error('Error starting test:', error)
+  }
 }
 
 const submitAnswer = async (answer) => {

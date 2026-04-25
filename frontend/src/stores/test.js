@@ -14,7 +14,7 @@ export const useTestStore = defineStore('test', {
     async startTest(testType) {
       try {
         console.log('Starting test with type:', testType)
-        const response = await axios.post('/api/test/start', {
+        const response = await axios.post('http://localhost:8000/api/test/start', {
           test_type: testType
         }, {
           headers: {

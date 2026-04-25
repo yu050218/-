@@ -320,10 +320,8 @@ def generate_question(correct_word):
     # 获取迷惑选项
     distractors = get_distractors(correct_word['word'])
     
-    # 构建选项列表
+    # 构建选项列表（只包含正确选项和5个迷惑选项）
     options = [correct_word['meaning']] + [d['meaning'] for d in distractors]
-    # 添加"不认识"选项
-    options.append('不认识')
     
     # 随机打乱选项顺序
     random.shuffle(options)
