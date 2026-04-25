@@ -14,6 +14,20 @@
       <div class="progress-bar">
         <div class="progress" :style="{ width: (testStore.currentQuestion / testStore.totalQuestions) * 100 + '%' }"></div>
       </div>
+      <div class="test-stats">
+        <div class="stat-item">
+          <span class="stat-label">错题数:</span>
+          <span class="stat-value wrong">{{ testStore.totalWrong || 0 }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">连续错题:</span>
+          <span class="stat-value consecutive-wrong">{{ testStore.consecutiveWrong || 0 }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">用时:</span>
+          <span class="stat-value timer">{{ formatTime(elapsedTime) }}</span>
+        </div>
+      </div>
       <div class="question">
         <h3>第 {{ testStore.currentQuestion }} / {{ testStore.totalQuestions }} 题</h3>
         <div class="word-info">
@@ -67,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTestStore } from '../stores/test'
 
 const testStore = useTestStore()
@@ -75,6 +89,33 @@ const isAnswered = ref(false)
 const isCorrect = ref(false)
 const selectedAnswer = ref(null)
 const correctIndex = ref(null)
+const elapsedTime = ref(0)
+let timer = null
+
+const formatTime = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+const startTimer = () => {
+  stopTimer()
+  elapsedTime.value = 0
+  timer = setInterval(() => {
+    elapsedTime.value++
+  }, 1000)
+}
+
+const stopTimer = () => {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+
+onUnmounted(() => {
+  stopTimer()
+})
 
 // 组件挂载时重置测试结果，确保不显示上一次的报告
 onMounted(() => {
@@ -82,6 +123,8 @@ onMounted(() => {
   testStore.testResult = null
   testStore.sessionId = null
   testStore.currentWord = null
+  testStore.totalWrong = 0
+  testStore.consecutiveWrong = 0
   localStorage.removeItem('testSessionId')
   console.log('After reset, testStore.sessionId:', testStore.sessionId)
   console.log('After reset, testStore.currentWord:', testStore.currentWord)
@@ -113,11 +156,16 @@ const startTest = async (testType) => {
     isCorrect.value = false
     selectedAnswer.value = null
     correctIndex.value = null
+    testStore.totalWrong = 0
+    testStore.consecutiveWrong = 0
+    // 启动计时器
+    startTimer()
     console.log('Calling testStore.startTest...')
     await testStore.startTest(testType)
     console.log('Test started successfully, currentWord:', testStore.currentWord)
   } catch (error) {
     console.error('Error starting test:', error)
+    stopTimer()
   }
 }
 
@@ -146,6 +194,14 @@ const submitAnswer = async (answer) => {
     if (response.question) {
       // 有下一个问题
       isCorrect.value = response.is_correct
+      
+      // 更新错题数和连续错题数
+      if (response.total_wrong !== undefined) {
+        testStore.totalWrong = response.total_wrong
+      }
+      if (response.consecutive_wrong !== undefined) {
+        testStore.consecutiveWrong = response.consecutive_wrong
+      }
       
       // 延迟500毫秒后进入下一题
       setTimeout(() => {
@@ -182,6 +238,7 @@ const resetTest = () => {
   isCorrect.value = false
   selectedAnswer.value = null
   correctIndex.value = null
+  stopTimer()
   testStore.resetTest()
 }
 
@@ -411,6 +468,44 @@ const playPronunciation = () => {
 button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.test-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.stat-value.wrong {
+  color: #f44336;
+}
+
+.stat-value.consecutive-wrong {
+  color: #ff9800;
+}
+
+.stat-value.timer {
+  color: #2196F3;
 }
 
 .test-start {

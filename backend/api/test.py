@@ -243,7 +243,9 @@ class TestSubmit(Resource):
                     'question': question,
                     'current_question': session_data['current_question'],
                     'total_questions': 50,
-                    'is_correct': is_correct
+                    'is_correct': is_correct,
+                    'total_wrong': session_data['total_wrong'],
+                    'consecutive_wrong': session_data['consecutive_wrong']
                 }, 200
             else:
                 # 单词列表用完了，结束测试
