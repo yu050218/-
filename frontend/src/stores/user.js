@@ -7,7 +7,8 @@ export const useUserStore = defineStore('user', {
     token: localStorage.getItem('token') || null
   }),
   getters: {
-    isLoggedIn: (state) => !!state.token
+    isLoggedIn: (state) => !!state.token,
+    isAdmin: (state) => state.user && state.user.is_admin === 1
   },
   actions: {
     async login(username, password) {
@@ -19,7 +20,8 @@ export const useUserStore = defineStore('user', {
         this.token = response.data.token
         this.user = {
           id: response.data.user_id,
-          username: response.data.username
+          username: response.data.username,
+          is_admin: response.data.is_admin
         }
         localStorage.setItem('token', this.token)
         return response.data

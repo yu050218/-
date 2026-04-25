@@ -25,7 +25,7 @@
     <div class="auth-buttons" v-else>
       <span>欢迎，{{ userStore.user?.username }}</span>
       <router-link to="/profile" class="btn">个人中心</router-link>
-      <router-link to="/admin" class="btn">后台管理</router-link>
+      <router-link to="/admin" class="btn" v-if="userStore.isAdmin">后台管理</router-link>
       <button @click="handleLogout" class="btn">退出登录</button>
     </div>
   </div>

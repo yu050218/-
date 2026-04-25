@@ -23,8 +23,12 @@ class AdminUsers(Resource):
         if not user_id:
             return {'message': 'Invalid or expired token'}, 401
 
-        # 检查用户是否为管理员（暂时假设所有用户都是管理员）
-        # 实际项目中应该在User模型中添加is_admin字段
+        # 检查用户是否为管理员
+        session = Session()
+        user = session.query(User).filter_by(id=user_id).first()
+        session.close()
+        if not user or user.is_admin != 1:
+            return {'message': 'Admin access required'}, 403
 
         session = Session()
         users = session.query(User).all()
@@ -48,7 +52,12 @@ class AdminUsers(Resource):
         if not current_user_id:
             return {'message': 'Invalid or expired token'}, 401
 
-        # 检查用户是否为管理员（暂时假设所有用户都是管理员）
+        # 检查用户是否为管理员
+        session = Session()
+        user = session.query(User).filter_by(id=current_user_id).first()
+        session.close()
+        if not user or user.is_admin != 1:
+            return {'message': 'Admin access required'}, 403
 
         session = Session()
         user = session.query(User).filter_by(id=user_id).first()
@@ -78,7 +87,12 @@ class AdminTestRecords(Resource):
         if not current_user_id:
             return {'message': 'Invalid or expired token'}, 401
 
-        # 检查用户是否为管理员（暂时假设所有用户都是管理员）
+        # 检查用户是否为管理员
+        session = Session()
+        user = session.query(User).filter_by(id=current_user_id).first()
+        session.close()
+        if not user or user.is_admin != 1:
+            return {'message': 'Admin access required'}, 403
 
         session = Session()
         records = session.query(TestRecord).filter_by(user_id=user_id).order_by(TestRecord.test_date.desc()).all()
@@ -106,7 +120,12 @@ class AdminWordBank(Resource):
         if not user_id:
             return {'message': 'Invalid or expired token'}, 401
 
-        # 检查用户是否为管理员（暂时假设所有用户都是管理员）
+        # 检查用户是否为管理员
+        session = Session()
+        user = session.query(User).filter_by(id=user_id).first()
+        session.close()
+        if not user or user.is_admin != 1:
+            return {'message': 'Admin access required'}, 403
 
         # 加载所有单词
         all_words = load_words_from_excel()
@@ -123,7 +142,12 @@ class AdminWordBank(Resource):
         if not user_id:
             return {'message': 'Invalid or expired token'}, 401
 
-        # 检查用户是否为管理员（暂时假设所有用户都是管理员）
+        # 检查用户是否为管理员
+        session = Session()
+        user = session.query(User).filter_by(id=user_id).first()
+        session.close()
+        if not user or user.is_admin != 1:
+            return {'message': 'Admin access required'}, 403
 
         # 上传新的词库文件
         # 实际项目中应该实现文件上传功能

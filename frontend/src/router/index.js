@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const routes = [
   {
@@ -51,6 +52,24 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore()
+  
+  // 检查是否访问管理员页面
+  if (to.path === '/admin') {
+    // 检查用户是否登录且是管理员
+    if (userStore.isLoggedIn && userStore.isAdmin) {
+      next()
+    } else {
+      // 重定向到登录页面
+      next('/login')
+    }
+  } else {
+    next()
+  }
 })
 
 export default router

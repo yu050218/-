@@ -58,7 +58,7 @@ class UserLogin(Resource):
 
         # 生成JWT令牌
         token = generate_token(user.id)
-        return {'token': token, 'user_id': user.id, 'username': user.username}, 200
+        return {'token': token, 'user_id': user.id, 'username': user.username, 'is_admin': user.is_admin}, 200
 
 
 class UserProfile(Resource):
@@ -84,6 +84,7 @@ class UserProfile(Resource):
             'id': user.id,
             'username': user.username,
             'email': user.email,
+            'is_admin': user.is_admin,
             'created_at': user.created_at
         }, 200
 
