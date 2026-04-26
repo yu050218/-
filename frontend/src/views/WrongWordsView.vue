@@ -36,7 +36,11 @@
     </div>
 
     <div v-else class="empty-message card animate-fade-in">
-      <div class="icon">📚</div>
+      <div class="icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+        </svg>
+      </div>
       <p>暂无错题记录</p>
       <p class="hint">完成测试后，答错的题目会自动添加到这里</p>
     </div>
@@ -60,7 +64,13 @@
         </div>
       </div>
       <div v-else class="review-complete">
-        <div class="icon">🎉</div>
+        <div class="icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </div>
         <h3>复习完成！</h3>
         <p>本次复习了 {{ reviewedWords.length }} 个单词</p>
         <button @click="finishReview" class="btn btn-primary">结束复习</button>
@@ -231,15 +241,29 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 
+.app.dark .word-card {
+  background-color: #1e293b;
+  border-left-color: #f87171;
+}
+
 .word-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.app.dark .word-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .word-info h3 {
   margin-bottom: 8px;
   font-size: 20px;
   font-weight: 700;
+  color: #1e293b;
+}
+
+.app.dark .word-info h3 {
+  color: #f1f5f9;
 }
 
 .phonetic {
@@ -249,11 +273,19 @@ onMounted(async () => {
   font-size: 14px;
 }
 
+.app.dark .phonetic {
+  color: #94a3b8;
+}
+
 .meaning {
   margin-bottom: 16px;
   color: #1e293b;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.app.dark .meaning {
+  color: #e2e8f0;
 }
 
 .stats-grid {
@@ -272,18 +304,34 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
+.app.dark .stat-item {
+  background-color: #334155;
+}
+
 .stat-item.wrong {
   border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.app.dark .stat-item.wrong {
+  border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
 .stat-item.correct {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
+.app.dark .stat-item.correct {
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
 .stat-label {
   font-size: 12px;
   color: #64748b;
   margin-bottom: 4px;
+}
+
+.app.dark .stat-label {
+  color: #94a3b8;
 }
 
 .stat-value {
@@ -295,8 +343,16 @@ onMounted(async () => {
   color: #ef4444;
 }
 
+.app.dark .stat-item.wrong .stat-value {
+  color: #f87171;
+}
+
 .stat-item.correct .stat-value {
   color: #10b981;
+}
+
+.app.dark .stat-item.correct .stat-value {
+  color: #34d399;
 }
 
 .last-wrong, .next-review {
@@ -305,9 +361,17 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 
+.app.dark .last-wrong, .app.dark .next-review {
+  color: #94a3b8;
+}
+
 .next-review {
   color: #165DFF;
   font-weight: 600;
+}
+
+.app.dark .next-review {
+  color: #60a5fa;
 }
 
 .empty-message {
@@ -316,8 +380,12 @@ onMounted(async () => {
 }
 
 .empty-message .icon {
-  font-size: 64px;
   margin-bottom: 20px;
+  color: #64748b;
+}
+
+.app.dark .empty-message .icon {
+  color: #60a5fa;
 }
 
 .empty-message p {
@@ -326,9 +394,17 @@ onMounted(async () => {
   margin-bottom: 12px;
 }
 
+.app.dark .empty-message p {
+  color: #94a3b8;
+}
+
 .empty-message .hint {
   font-size: 14px;
   color: #94a3b8;
+}
+
+.app.dark .empty-message .hint {
+  color: #64748b;
 }
 
 .review-section {
@@ -341,6 +417,10 @@ onMounted(async () => {
   color: #64748b;
   margin-bottom: 20px;
   font-size: 14px;
+}
+
+.app.dark .review-info {
+  color: #94a3b8;
 }
 
 .review-test {
@@ -368,13 +448,31 @@ onMounted(async () => {
 }
 
 .review-complete .icon {
-  font-size: 64px;
   margin-bottom: 20px;
+  color: #10b981;
+}
+
+.app.dark .review-complete .icon {
+  color: #34d399;
 }
 
 .review-complete h3 {
   font-size: 24px;
   margin-bottom: 12px;
+  color: #1e293b;
+}
+
+.app.dark .review-complete h3 {
+  color: #f1f5f9;
+}
+
+.review-complete p {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.app.dark .review-complete p {
+  color: #94a3b8;
 }
 
 .options {
@@ -397,9 +495,21 @@ onMounted(async () => {
   font-weight: 500;
 }
 
+.app.dark .option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
 .option:hover {
   background-color: #f1f5f9;
   border-color: #165DFF;
+  transform: translateY(-2px);
+}
+
+.app.dark .option:hover {
+  background-color: #334155;
+  border-color: #60a5fa;
   transform: translateY(-2px);
 }
 
