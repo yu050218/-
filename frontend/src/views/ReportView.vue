@@ -1,9 +1,9 @@
 <template>
   <div class="report">
     <h1>测试报告</h1>
-    
+
     <!-- 最新测试结果 -->
-    <div v-if="testStore.testResult" class="latest-result">
+    <div v-if="testStore.testResult" class="latest-result card animate-fade-in" style="animation-delay: 0.1s">
       <h2>最新测试结果</h2>
       <div class="result-card">
         <div class="result-item">
@@ -20,15 +20,17 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 历史趋势图 -->
-    <div class="history-chart">
+    <div class="history-chart card animate-fade-in" style="animation-delay: 0.2s">
       <h2>历史测试趋势</h2>
-      <canvas ref="chartCanvas" id="chartCanvas"></canvas>
+      <div class="chart-container">
+        <canvas ref="chartCanvas" id="chartCanvas"></canvas>
+      </div>
     </div>
-    
+
     <!-- 历史测试记录 -->
-    <div class="history-records">
+    <div class="history-records card animate-fade-in" style="animation-delay: 0.3s">
       <h2>历史测试记录</h2>
       <div class="records-table">
         <table>
@@ -55,10 +57,10 @@
         </table>
       </div>
     </div>
-    
-    <div class="report-buttons">
-      <router-link to="/test" class="btn">再测一次</router-link>
-      <router-link to="/" class="btn">返回首页</router-link>
+
+    <div class="report-buttons card animate-fade-in" style="animation-delay: 0.4s">
+      <router-link to="/test" class="btn btn-primary">再测一次</router-link>
+      <router-link to="/" class="btn btn-secondary">返回首页</router-link>
     </div>
   </div>
 </template>
@@ -74,7 +76,6 @@ const userStore = useUserStore()
 const chartCanvas = ref(null)
 let chart = null
 
-// 只显示最近10次的测试记录
 const recentTestRecords = computed(() => {
   return testStore.testRecords.slice(0, 10)
 })
@@ -99,25 +100,21 @@ const loadTestRecords = async () => {
 
 const createChart = () => {
   if (!chartCanvas.value) return
-  
+
   const ctx = chartCanvas.value.getContext('2d')
-  
-  // 只取最近的测试记录（最多10次）
+
   const recentRecords = testStore.testRecords.slice(0, 10).reverse()
   console.log('Recent test records for chart:', recentRecords)
-  
-  // 准备图表数据
+
   const labels = recentRecords.map(record => formatDate(record.test_date))
   const correctRateData = recentRecords.map(record => (record.correct_count / record.total_count) * 100)
   console.log('Chart labels:', labels)
   console.log('Chart data:', correctRateData)
-  
-  // 销毁旧图表
+
   if (chart) {
     chart.destroy()
   }
-  
-  // 创建新图表
+
   chart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -126,8 +123,8 @@ const createChart = () => {
         {
           label: '正确率 (%)',
           data: correctRateData,
-          borderColor: '#2196F3',
-          backgroundColor: 'rgba(33, 150, 243, 0.1)',
+          borderColor: '#165DFF',
+          backgroundColor: 'rgba(22, 93, 255, 0.1)',
           tension: 0.4,
           fill: true
         }
@@ -172,60 +169,64 @@ onMounted(async () => {
 .report {
   max-width: 800px;
   margin: 0 auto;
-  padding: 40px 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
 }
 
 .report h1 {
   text-align: center;
   margin-bottom: 40px;
-  color: #333;
-}
-
-.latest-result {
-  margin-bottom: 40px;
+  font-size: 36px;
 }
 
 .latest-result h2 {
-  margin-bottom: 20px;
-  color: #666;
+  margin-bottom: 24px;
+  font-size: 20px;
 }
 
 .result-card {
-  display: flex;
-  justify-content: space-around;
-  background-color: #f5f5f5;
-  padding: 20px;
-  border-radius: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .result-item {
   text-align: center;
+  padding: 20px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.result-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .result-item .label {
   display: block;
-  color: #666;
-  margin-bottom: 5px;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .result-item .value {
   display: block;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-}
-
-.history-chart {
-  margin-bottom: 40px;
-  height: 400px;
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #165DFF, #0EA5E9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .history-chart h2 {
-  margin-bottom: 20px;
-  color: #666;
+  margin-bottom: 24px;
+  font-size: 20px;
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
 }
 
 #chartCanvas {
@@ -233,13 +234,9 @@ onMounted(async () => {
   height: 100% !important;
 }
 
-.history-records {
-  margin-bottom: 40px;
-}
-
 .history-records h2 {
-  margin-bottom: 20px;
-  color: #666;
+  margin-bottom: 24px;
+  font-size: 20px;
 }
 
 .records-table {
@@ -252,38 +249,91 @@ table {
 }
 
 th, td {
-  padding: 12px;
+  padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-  color: #333;
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #64748b;
+}
+
+tr {
+  transition: all 0.3s ease;
 }
 
 tr:hover {
-  background-color: #f5f5f5;
+  background-color: #f8fafc;
 }
 
 .report-buttons {
   display: flex;
   justify-content: center;
-  margin-top: 40px;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 30px;
 }
 
-.btn {
-  padding: 12px 24px;
-  background-color: #4CAF50;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  margin: 0 10px;
-  transition: background-color 0.3s;
+/* 动画效果 */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
 }
 
-.btn:hover {
-  background-color: #45a049;
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .report {
+    padding: 16px;
+  }
+
+  .report h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+
+  .result-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .result-item {
+    padding: 16px;
+  }
+
+  .result-item .value {
+    font-size: 24px;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+
+  .report-buttons {
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .report-buttons .btn {
+    width: 200px;
+  }
+
+  table {
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 10px 12px;
+  }
 }
 </style>

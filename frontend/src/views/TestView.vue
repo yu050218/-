@@ -3,14 +3,14 @@
     <h1>词汇测试</h1>
     
     <!-- 开始测试按钮 -->
-    <div v-if="!testStore.sessionId && !testStore.testResult" class="test-start">
+    <div v-if="!testStore.sessionId && !testStore.testResult" class="test-start card animate-fade-in">
       <h2>开始词汇测试</h2>
       <p>本次测试共50道题，包含小学、初中、高中各难度级别</p>
-      <button @click="startTest('50')" class="btn">开始测试</button>
+      <button @click="startTest('50')" class="btn btn-primary">开始测试</button>
     </div>
     
     <!-- 测试进行中 -->
-    <div v-else-if="testStore.currentWord" class="test-progress">
+    <div v-else-if="testStore.currentWord" class="test-progress card animate-fade-in">
       <div class="progress-bar">
         <div class="progress" :style="{ width: (testStore.currentQuestion / testStore.totalQuestions) * 100 + '%' }"></div>
       </div>
@@ -55,7 +55,7 @@
     </div>
     
     <!-- 测试结果 -->
-    <div v-else-if="testStore.testResult" class="test-result">
+    <div v-else-if="testStore.testResult" class="test-result card animate-fade-in">
       <h2>测试结果</h2>
       <div class="result-info">
         <p>答对: {{ testStore.testResult.correct_count }} / {{ testStore.testResult.total_count }}</p>
@@ -73,8 +73,8 @@
         </div>
       </div>
       <div class="result-buttons">
-        <button @click="resetTest" class="btn">再测一次</button>
-        <router-link to="/report" class="btn">查看报告</router-link>
+        <button @click="resetTest" class="btn btn-secondary">再测一次</button>
+        <router-link to="/report" class="btn btn-primary">查看报告</router-link>
       </div>
     </div>
   </div>
@@ -83,8 +83,10 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTestStore } from '../stores/test'
+import { useRouter } from 'vue-router'
 
 const testStore = useTestStore()
+const router = useRouter()
 const isAnswered = ref(false)
 const isCorrect = ref(false)
 const selectedAnswer = ref(null)
@@ -255,49 +257,40 @@ const playPronunciation = () => {
 .test {
   max-width: 600px;
   margin: 0 auto;
-  padding: 40px 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
 }
 
 .test h1 {
   text-align: center;
-  margin-bottom: 30px;
-  color: #333;
+  margin-bottom: 40px;
+  font-size: 36px;
 }
 
-.test-type h2 {
+.test-start {
   text-align: center;
-  margin-bottom: 30px;
-  color: #666;
+  padding: 60px 0;
 }
 
-.test-options {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 40px;
+.test-start h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
 }
 
-.btn {
-  padding: 15px 30px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
+.test-start p {
+  margin-bottom: 40px;
   font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  line-height: 1.6;
 }
 
-.btn:hover {
-  background-color: #45a049;
+.test-start .btn {
+  padding: 15px 40px;
+  font-size: 18px;
 }
 
 .progress-bar {
   width: 100%;
   height: 10px;
-  background-color: #f0f0f0;
+  background-color: #e2e8f0;
   border-radius: 5px;
   margin-bottom: 30px;
   overflow: hidden;
@@ -305,14 +298,16 @@ const playPronunciation = () => {
 
 .progress {
   height: 100%;
-  background-color: #4CAF50;
-  transition: width 0.5s;
+  background: linear-gradient(90deg, #165DFF, #0EA5E9);
+  transition: width 0.5s ease;
+  border-radius: 5px;
 }
 
 .question h3 {
   text-align: center;
   margin-bottom: 30px;
-  color: #666;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .word-info {
@@ -321,81 +316,90 @@ const playPronunciation = () => {
 }
 
 .word-info h2 {
-  font-size: 36px;
-  margin-bottom: 10px;
-  color: #333;
+  font-size: 48px;
+  margin-bottom: 16px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #165DFF, #0EA5E9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .phonetic-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
 .phonetic {
-  color: #999;
+  color: #64748b;
   font-style: italic;
   margin: 0;
+  font-size: 16px;
 }
 
 .phonetic-btn {
-  background-color: #f0f0f0;
-  color: #333;
-  padding: 5px 10px;
-  font-size: 14px;
-  border: 1px solid #ddd;
+  background-color: #e2e8f0;
+  color: #1e293b;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .phonetic-btn:hover {
-  background-color: #e0e0e0;
-  border-color: #4CAF50;
-}
-
-.meaning {
-  font-size: 18px;
-  color: #666;
+  background-color: #cbd5e1;
+  border-color: #165DFF;
+  transform: scale(1.1);
 }
 
 .options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-top: 30px;
 }
 
 .option {
   width: 100%;
   text-align: left;
-  padding: 15px 20px;
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #ddd;
-  transition: all 0.3s;
+  padding: 16px 20px;
+  background-color: #f8fafc;
+  color: #1e293b;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .option:hover {
-  background-color: #e0e0e0;
-  border-color: #4CAF50;
+  background-color: #f1f5f9;
+  border-color: #165DFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .option.correct {
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #10b981, #34d399);
   color: white;
-  border-color: #4CAF50;
+  border-color: #10b981;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
 }
 
 .option.incorrect {
-  background-color: #f44336;
+  background: linear-gradient(135deg, #ef4444, #f87171);
   color: white;
-  border-color: #f44336;
+  border-color: #ef4444;
+  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4);
 }
 
 .unknown-button {
@@ -404,11 +408,19 @@ const playPronunciation = () => {
 }
 
 .unknown {
-  background-color: #ff9800;
+  background: linear-gradient(135deg, #ff9800, #f59e0b);
+  color: white;
+  padding: 16px 40px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .unknown:hover {
-  background-color: #f57c00;
+  background: linear-gradient(135deg, #f57c00, #ea580c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(245, 124, 0, 0.4);
 }
 
 .test-result {
@@ -417,7 +429,7 @@ const playPronunciation = () => {
 
 .test-result h2 {
   margin-bottom: 30px;
-  color: #333;
+  font-size: 28px;
 }
 
 .result-info {
@@ -426,22 +438,24 @@ const playPronunciation = () => {
 
 .result-info p {
   font-size: 18px;
-  margin-bottom: 10px;
-  color: #666;
+  margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .suggestions {
-  margin-top: 20px;
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 5px;
-  border-left: 4px solid #4CAF50;
+  margin-top: 30px;
+  background-color: #f8fafc;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #165DFF;
+  text-align: left;
 }
 
 .suggestions h4 {
   margin-top: 0;
-  color: #333;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .suggestions ul {
@@ -450,33 +464,40 @@ const playPronunciation = () => {
 }
 
 .suggestions li {
-  margin-bottom: 5px;
-  color: #666;
-  font-size: 16px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .result-buttons {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 20px;
   margin-top: 40px;
+  flex-wrap: wrap;
 }
 
 .result-buttons .btn {
-  margin: 0 10px;
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .test-stats {
   display: flex;
   justify-content: space-around;
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .stat-item {
@@ -487,45 +508,85 @@ button:disabled {
 
 .stat-label {
   font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .stat-value {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .stat-value.wrong {
-  color: #f44336;
+  color: #ef4444;
 }
 
 .stat-value.consecutive-wrong {
-  color: #ff9800;
+  color: #f59e0b;
 }
 
 .stat-value.timer {
-  color: #2196F3;
+  color: #165DFF;
 }
 
-.test-start {
-  text-align: center;
-  padding: 60px 0;
+/* 动画效果 */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
 }
 
-.test-start h2 {
-  margin-bottom: 20px;
-  color: #333;
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.test-start p {
-  margin-bottom: 40px;
-  color: #666;
-  font-size: 16px;
-}
-
-.test-start .btn {
-  padding: 15px 40px;
-  font-size: 18px;
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .test {
+    padding: 16px;
+  }
+  
+  .test h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+  
+  .word-info h2 {
+    font-size: 36px;
+  }
+  
+  .options {
+    gap: 10px;
+  }
+  
+  .option {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  
+  .test-stats {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .stat-item {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .result-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .result-buttons .btn {
+    width: 200px;
+  }
 }
 </style>

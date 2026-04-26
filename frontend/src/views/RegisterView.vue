@@ -1,23 +1,25 @@
 <template>
   <div class="register">
     <h1>用户注册</h1>
-    <form @submit.prevent="handleRegister">
-      <div class="form-group">
-        <label for="username">用户名</label>
-        <input type="text" id="username" v-model="form.username" required />
-      </div>
-      <div class="form-group">
-        <label for="email">邮箱</label>
-        <input type="email" id="email" v-model="form.email" required />
-      </div>
-      <div class="form-group">
-        <label for="password">密码</label>
-        <input type="password" id="password" v-model="form.password" required />
-      </div>
-      <div class="error" v-if="error">{{ error }}</div>
-      <button type="submit" class="btn">注册</button>
-    </form>
-    <p>已有账号？<router-link to="/login">立即登录</router-link></p>
+    <div class="card animate-fade-in">
+      <form @submit.prevent="handleRegister">
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input type="text" id="username" v-model="form.username" required />
+        </div>
+        <div class="form-group">
+          <label for="email">邮箱</label>
+          <input type="email" id="email" v-model="form.email" required />
+        </div>
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input type="password" id="password" v-model="form.password" required />
+        </div>
+        <div class="error" v-if="error">{{ error }}</div>
+        <button type="submit" class="btn btn-primary">注册</button>
+      </form>
+      <p class="link-text">已有账号？<router-link to="/login">立即登录</router-link></p>
+    </div>
   </div>
 </template>
 
@@ -51,70 +53,64 @@ const handleRegister = async () => {
 .register {
   max-width: 400px;
   margin: 0 auto;
-  padding: 40px 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
 }
 
 .register h1 {
   text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  color: #666;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
+  margin-bottom: 40px;
+  font-size: 36px;
 }
 
 .error {
-  color: red;
+  color: #ef4444;
   margin-bottom: 20px;
   text-align: center;
-}
-
-.btn {
-  width: 100%;
   padding: 12px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 8px;
+  font-weight: 500;
 }
 
-.btn:hover {
-  background-color: #45a049;
-}
-
-.register p {
+.link-text {
   text-align: center;
-  margin-top: 20px;
-  color: #666;
+  margin-top: 24px;
+  color: #64748b;
 }
 
-.register p a {
-  color: #4CAF50;
+.register a {
+  color: #165DFF;
   text-decoration: none;
+  font-weight: 600;
 }
 
-.register p a:hover {
+.register a:hover {
   text-decoration: underline;
+}
+
+/* 动画效果 */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .register {
+    padding: 16px;
+  }
+
+  .register h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
 }
 </style>

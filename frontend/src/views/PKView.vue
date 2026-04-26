@@ -1,47 +1,51 @@
 <template>
   <div class="pk">
     <h1>单词PK对战</h1>
-    
+
     <!-- 未登录状态 -->
-    <div v-if="!userStore.isLoggedIn" class="not-logged-in">
+    <div v-if="!userStore.isLoggedIn" class="not-logged-in card animate-fade-in">
+      <div class="icon">⚔️</div>
       <p>请先登录以参与PK对战</p>
-      <router-link to="/login" class="btn">登录</router-link>
+      <router-link to="/login" class="btn btn-primary">登录</router-link>
     </div>
-    
+
     <!-- 已登录状态 -->
     <div v-else>
       <!-- 匹配界面 -->
-      <div v-if="!matchId" class="match-queue">
-        <h2>寻找对手...</h2>
-        <p v-if="isMatching">正在匹配中，请稍候...</p>
-        <button v-else @click="startMatching" class="btn">开始匹配</button>
+      <div v-if="!matchId" class="match-queue card animate-fade-in">
+        <h2>寻找对手</h2>
+        <div v-if="isMatching" class="matching-animation">
+          <div class="spinner"></div>
+          <p>正在匹配中，请稍候...</p>
+        </div>
+        <button v-else @click="startMatching" class="btn btn-primary">开始匹配</button>
       </div>
-      
+
       <!-- 对战界面 -->
-      <div v-else-if="matchStatus === 'active'" class="pk-battle">
+      <div v-else-if="matchStatus === 'active'" class="pk-battle card animate-fade-in">
         <h2>PK对战</h2>
         <div class="battle-info">
-          <div class="player">
+          <div class="player you">
             <span class="player-name">你</span>
             <span class="score">{{ score1 }}</span>
           </div>
           <div class="vs">VS</div>
-          <div class="player">
+          <div class="player opponent">
             <span class="player-name">{{ isAiMatch ? 'AI' : '对手' }}</span>
             <span class="score">{{ score2 }}</span>
           </div>
         </div>
         <div class="round-info">
-          <p>第 {{ currentRound }} / 10 回合</p>
+          <span class="round-badge">第 {{ currentRound }} / 10 回合</span>
         </div>
         <div class="word-info">
           <h3>{{ currentWord }}</h3>
           <p class="phonetic">{{ currentPhonetic }}</p>
-          <p>选择正确的释义：</p>
+          <p class="instruction">选择正确的释义：</p>
         </div>
         <div class="options">
-          <button 
-            v-for="(option, index) in options" 
+          <button
+            v-for="(option, index) in options"
             :key="index"
             @click="submitAnswer(index)"
             :class="['btn', 'option']"
@@ -50,29 +54,29 @@
           </button>
         </div>
       </div>
-      
+
       <!-- 对战结果 -->
-      <div v-else-if="matchStatus === 'finished'" class="pk-result">
+      <div v-else-if="matchStatus === 'finished'" class="pk-result card animate-fade-in">
         <h2>对战结果</h2>
         <div class="result-info">
-          <div class="player-result">
+          <div class="player-result you">
             <span class="player-name">你</span>
             <span class="score">{{ score1 }}</span>
           </div>
           <div class="vs">VS</div>
-          <div class="player-result">
+          <div class="player-result opponent">
             <span class="player-name">{{ isAiMatch ? 'AI' : '对手' }}</span>
             <span class="score">{{ score2 }}</span>
           </div>
         </div>
-        <div class="winner">
-          <p v-if="winner === 'you'">你赢了！</p>
-          <p v-else-if="winner === 'opponent'">你输了！</p>
-          <p v-else>平局！</p>
+        <div class="winner" :class="{ 'win': winner === 'you', 'lose': winner === 'opponent', 'draw': winner === 'draw' }">
+          <span v-if="winner === 'you'">🎉 你赢了！</span>
+          <span v-else-if="winner === 'opponent'">😢 你输了！</span>
+          <span v-else>🤝 平局！</span>
         </div>
         <div class="result-buttons">
-          <button @click="resetPK" class="btn">再来一局</button>
-          <router-link to="/" class="btn">返回首页</router-link>
+          <button @click="resetPK" class="btn btn-primary">再来一局</button>
+          <router-link to="/" class="btn btn-secondary">返回首页</router-link>
         </div>
       </div>
     </div>
@@ -101,11 +105,13 @@ const isAiMatch = ref(false)
 const startMatching = async () => {
   isMatching.value = true
   try {
+    console.log('Token being sent:', userStore.token)
     const response = await axios.post('/api/pk/match', {}, {
       headers: {
         Authorization: `Bearer ${userStore.token}`
       }
     })
+    console.log('Match response:', response)
     if (response.status === 200) {
       matchId.value = response.data.match_id
       matchStatus.value = 'active'
@@ -122,6 +128,9 @@ const startMatching = async () => {
     }
   } catch (error) {
     console.error('匹配失败:', error)
+    console.error('Error response:', error.response)
+    console.error('Error data:', error.response?.data)
+    console.error('Error status:', error.response?.status)
     isMatching.value = false
   }
 }
@@ -172,184 +181,328 @@ const resetPK = () => {
 .pk {
   max-width: 600px;
   margin: 0 auto;
-  padding: 40px 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
 }
 
 .pk h1 {
   text-align: center;
   margin-bottom: 40px;
-  color: #333;
+  font-size: 36px;
 }
 
 .not-logged-in {
   text-align: center;
-  padding: 60px 0;
+  padding: 60px 20px;
+}
+
+.not-logged-in .icon {
+  font-size: 64px;
+  margin-bottom: 20px;
 }
 
 .not-logged-in p {
   margin-bottom: 30px;
   font-size: 18px;
-  color: #666;
+  color: #64748b;
 }
 
 .match-queue {
   text-align: center;
-  padding: 60px 0;
+  padding: 60px 20px;
 }
 
 .match-queue h2 {
   margin-bottom: 30px;
-  color: #666;
+  font-size: 24px;
 }
 
-.btn {
-  padding: 15px 30px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  text-decoration: none;
-  display: inline-block;
+.matching-animation {
+  padding: 40px 0;
 }
 
-.btn:hover {
-  background-color: #45a049;
+.spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #165DFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .pk-battle h2 {
   text-align: center;
   margin-bottom: 30px;
-  color: #333;
+  font-size: 24px;
 }
 
 .battle-info {
   display: flex;
   justify-content: space-around;
-  margin-bottom: 30px;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 10px;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 24px;
+  background-color: #f8fafc;
+  border-radius: 12px;
 }
 
 .player {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .player-name {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .score {
-  font-size: 24px;
-  font-weight: bold;
-  color: #4CAF50;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.player.you .score {
+  color: #10b981;
+}
+
+.player.opponent .score {
+  color: #ef4444;
 }
 
 .vs {
-  font-size: 24px;
-  font-weight: bold;
-  color: #f44336;
-  display: flex;
-  align-items: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: #64748b;
 }
 
 .round-info {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 18px;
-  color: #666;
+  margin-bottom: 24px;
+}
+
+.round-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #165DFF, #0EA5E9);
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .word-info {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .word-info h3 {
-  font-size: 36px;
-  margin-bottom: 20px;
-  color: #333;
+  font-size: 42px;
+  margin-bottom: 12px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #165DFF, #0EA5E9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.word-info p {
-  font-size: 18px;
-  color: #666;
-}
-
-.phonetic {
-  color: #999;
+.word-info .phonetic {
+  color: #64748b;
   font-style: italic;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.word-info .instruction {
+  color: #64748b;
+  font-size: 16px;
+  margin-bottom: 8px;
 }
 
 .options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 30px;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .option {
   width: 100%;
   text-align: left;
-  padding: 15px 20px;
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #ddd;
-  transition: all 0.3s;
+  padding: 16px 20px;
+  background-color: #f8fafc;
+  color: #1e293b;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .option:hover {
-  background-color: #e0e0e0;
-  border-color: #4CAF50;
+  background-color: #f1f5f9;
+  border-color: #165DFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .pk-result {
   text-align: center;
-  padding: 40px 0;
+  padding: 40px 20px;
 }
 
 .pk-result h2 {
   margin-bottom: 30px;
-  color: #333;
+  font-size: 24px;
 }
 
 .result-info {
   display: flex;
   justify-content: space-around;
+  align-items: center;
   margin-bottom: 30px;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 10px;
+  padding: 24px;
+  background-color: #f8fafc;
+  border-radius: 12px;
 }
 
 .player-result {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.player-result .player-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.player-result .score {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.player-result.you .score {
+  color: #10b981;
+}
+
+.player-result.opponent .score {
+  color: #ef4444;
 }
 
 .winner {
   margin-bottom: 40px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #f44336;
+  font-size: 28px;
+  font-weight: 700;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.winner.win {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+  color: #10b981;
+}
+
+.winner.lose {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+  color: #ef4444;
+}
+
+.winner.draw {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.2));
+  color: #f59e0b;
 }
 
 .result-buttons {
   display: flex;
-  justify-content: space-around;
-  margin-top: 40px;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.result-buttons .btn {
-  margin: 0 10px;
+/* 动画效果 */
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .pk {
+    padding: 16px;
+  }
+
+  .pk h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+
+  .not-logged-in {
+    padding: 40px 16px;
+  }
+
+  .not-logged-in .icon {
+    font-size: 48px;
+  }
+
+  .match-queue {
+    padding: 40px 16px;
+  }
+
+  .battle-info {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .vs {
+    font-size: 24px;
+  }
+
+  .score {
+    font-size: 28px;
+  }
+
+  .word-info h3 {
+    font-size: 32px;
+  }
+
+  .result-info {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .winner {
+    font-size: 24px;
+    padding: 16px;
+  }
+
+  .result-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .result-buttons .btn {
+    width: 200px;
+  }
 }
 </style>
