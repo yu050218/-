@@ -4,7 +4,12 @@
 
     <!-- 未登录状态 -->
     <div v-if="!userStore.isLoggedIn" class="not-logged-in card animate-fade-in">
-      <div class="icon">🔒</div>
+      <div class="icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
       <p>请先登录以查看个人信息</p>
       <router-link to="/login" class="btn btn-primary">登录</router-link>
     </div>
@@ -137,14 +142,22 @@ onMounted(() => {
 }
 
 .not-logged-in .icon {
-  font-size: 64px;
   margin-bottom: 20px;
+  color: #64748b;
+}
+
+.app.dark .not-logged-in .icon {
+  color: #60a5fa;
 }
 
 .not-logged-in p {
   margin-bottom: 30px;
   font-size: 18px;
   color: #64748b;
+}
+
+.app.dark .not-logged-in p {
+  color: #94a3b8;
 }
 
 .user-info h2 {
@@ -167,8 +180,17 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
+.app.dark .info-item {
+  background-color: #1e293b;
+}
+
 .info-item:hover {
   background-color: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.app.dark .info-item:hover {
+  background-color: #334155;
   transform: translateX(4px);
 }
 
@@ -177,14 +199,65 @@ onMounted(() => {
   color: #64748b;
 }
 
+.app.dark .info-item .label {
+  color: #94a3b8;
+}
+
 .info-item .value {
   color: #1e293b;
   font-weight: 500;
 }
 
+.app.dark .info-item .value {
+  color: #f1f5f9;
+}
+
 .edit-profile h2 {
   margin-bottom: 24px;
   font-size: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.app.dark .form-group label {
+  color: #94a3b8;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #f8fafc;
+  color: #1e293b;
+  transition: all 0.3s ease;
+}
+
+.app.dark .form-group input {
+  border-color: #334155;
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #165DFF;
+  box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
+}
+
+.app.dark .form-group input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
 }
 
 .error {
@@ -197,6 +270,10 @@ onMounted(() => {
   font-weight: 500;
 }
 
+.app.dark .error {
+  background-color: rgba(239, 68, 68, 0.15);
+}
+
 .success {
   color: #10b981;
   margin-bottom: 20px;
@@ -205,6 +282,10 @@ onMounted(() => {
   background-color: rgba(16, 185, 129, 0.1);
   border-radius: 8px;
   font-weight: 500;
+}
+
+.app.dark .success {
+  background-color: rgba(16, 185, 129, 0.15);
 }
 
 .profile-actions {
@@ -262,7 +343,8 @@ onMounted(() => {
   }
 
   .not-logged-in .icon {
-    font-size: 48px;
+    width: 48px;
+    height: 48px;
   }
 
   .info-item {

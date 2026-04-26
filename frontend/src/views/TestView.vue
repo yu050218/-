@@ -296,6 +296,10 @@ const playPronunciation = () => {
   overflow: hidden;
 }
 
+.app.dark .progress-bar {
+  background-color: #334155;
+}
+
 .progress {
   height: 100%;
   background: linear-gradient(90deg, #165DFF, #0EA5E9);
@@ -340,6 +344,10 @@ const playPronunciation = () => {
   font-size: 16px;
 }
 
+.app.dark .phonetic {
+  color: #94a3b8;
+}
+
 .phonetic-btn {
   background-color: #e2e8f0;
   color: #1e293b;
@@ -355,10 +363,21 @@ const playPronunciation = () => {
   transition: all 0.3s ease;
 }
 
+.app.dark .phonetic-btn {
+  background-color: #334155;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+
 .phonetic-btn:hover {
   background-color: #cbd5e1;
   border-color: #165DFF;
   transform: scale(1.1);
+}
+
+.app.dark .phonetic-btn:hover {
+  background-color: #475569;
+  border-color: #60a5fa;
 }
 
 .options {
@@ -381,11 +400,23 @@ const playPronunciation = () => {
   font-weight: 500;
 }
 
+.app.dark .option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
 .option:hover {
   background-color: #f1f5f9;
   border-color: #165DFF;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.app.dark .option:hover {
+  background-color: #334155;
+  border-color: #60a5fa;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .option.correct {
@@ -442,6 +473,10 @@ const playPronunciation = () => {
   font-weight: 500;
 }
 
+.app.dark .result-info p {
+  color: #f1f5f9;
+}
+
 .suggestions {
   margin-top: 30px;
   background-color: #f8fafc;
@@ -451,11 +486,21 @@ const playPronunciation = () => {
   text-align: left;
 }
 
+.app.dark .suggestions {
+  background-color: #1e293b;
+  border-left-color: #60a5fa;
+}
+
 .suggestions h4 {
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 16px;
   font-weight: 600;
+  color: #1e293b;
+}
+
+.app.dark .suggestions h4 {
+  color: #f1f5f9;
 }
 
 .suggestions ul {
@@ -467,6 +512,11 @@ const playPronunciation = () => {
   margin-bottom: 8px;
   font-size: 14px;
   line-height: 1.5;
+  color: #475569;
+}
+
+.app.dark .suggestions li {
+  color: #cbd5e1;
 }
 
 .result-buttons {
@@ -500,6 +550,11 @@ button:disabled {
   border: 1px solid #e2e8f0;
 }
 
+.app.dark .test-stats {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
 .stat-item {
   display: flex;
   flex-direction: column;
@@ -511,6 +566,10 @@ button:disabled {
   color: #64748b;
   margin-bottom: 8px;
   font-weight: 500;
+}
+
+.app.dark .stat-label {
+  color: #94a3b8;
 }
 
 .stat-value {

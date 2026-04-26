@@ -32,15 +32,14 @@ class PKMatch(Resource):
         if not user_id:
             return {'message': 'Invalid or expired token'}, 401
 
-        # 检查用户是否已在队列中
-        for item in match_queue:
-            if item['user_id'] == user_id:
-                return {'message': 'You are already in the match queue'}, 400
+        # 检查用户是否已在队列中，如果在则移除
+        match_queue[:] = [item for item in match_queue if item['user_id'] != user_id]
 
-        # 检查用户是否已在活跃对战中
-        for match_id, match in active_matches.items():
+        # 检查用户是否已在活跃对战中，如果在则移除旧的对战
+        for match_id, match in list(active_matches.items()):
             if match['player1'] == user_id or match['player2'] == user_id:
-                return {'message': 'You are already in a match'}, 400
+                print(f"Removing stale match {match_id} for user {user_id}")
+                del active_matches[match_id]
 
         # 清理超时的队列项
         self.cleanup_timeout_queue()
@@ -88,7 +87,7 @@ class PKMatch(Resource):
         else:
             # 没有其他用户，安排人机对战
             print(f"No opponents found, creating AI match for user {user_id}")
-            
+
             # 生成对战ID
             match_id = str(random.randint(100000, 999999))
 
@@ -121,7 +120,7 @@ class PKMatch(Resource):
                 'opponent_id': 'AI',
                 'question': question
             }, 200
-            
+
     def cleanup_timeout_queue(self):
         """清理超时的队列项"""
         current_time = time.time()
@@ -138,6 +137,28 @@ class PKMatch(Resource):
         match_id = args['match_id']
         action = args['action']
 
+        # 如果是离开操作，先获取用户ID
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return {'message': 'Authorization header is required'}, 401
+        token = auth_header.split(' ')[1] if len(auth_header.split(' ')) > 1 else auth_header
+        user_id = verify_token(token)
+        if not user_id:
+            return {'message': 'Invalid or expired token'}, 401
+
+        # 处理离开操作
+        if action == 'leave':
+            # 从队列中移除
+            match_queue[:] = [item for item in match_queue if item['user_id'] != user_id]
+
+            # 从活跃对战中移除
+            for mid, match in list(active_matches.items()):
+                if match['player1'] == user_id or match['player2'] == user_id:
+                    del active_matches[mid]
+                    return {'message': 'Match left'}, 200
+
+            return {'message': 'No active match found'}, 200
+
         # 检查对战是否存在
         if match_id not in active_matches:
             return {'message': 'Match not found'}, 404
@@ -145,15 +166,6 @@ class PKMatch(Resource):
         match = active_matches[match_id]
 
         if action == 'submit':
-            # 从请求头获取用户ID
-            auth_header = request.headers.get('Authorization')
-            if not auth_header:
-                return {'message': 'Authorization header is required'}, 401
-            token = auth_header.split(' ')[1] if len(auth_header.split(' ')) > 1 else auth_header
-            user_id = verify_token(token)
-            if not user_id:
-                return {'message': 'Invalid or expired token'}, 401
-
             # 检查用户是否是对战的参与者
             if user_id != match['player1']:
                 return {'message': 'You are not a participant in this match'}, 403
@@ -163,7 +175,7 @@ class PKMatch(Resource):
             is_correct = False
             if answer != 'unknown':
                 is_correct = int(answer) == match['current_word']['correct_index']
-                
+
             # 如果用户答错，将错题添加到错题本
             if not is_correct:
                 session = Session()
@@ -190,7 +202,7 @@ class PKMatch(Resource):
                     session.add(wrong_word)
                 session.commit()
                 session.close()
-            
+
             # 更新得分
             if is_correct:
                 match['score1'] += 1
@@ -229,10 +241,6 @@ class PKMatch(Resource):
                     'question': question,
                     'is_correct': is_correct
                 }, 200
-        elif action == 'leave':
-            # 处理离开对战
-            del active_matches[match_id]
-            return {'message': 'Match left'}, 200
         else:
             return {'message': 'Invalid action'}, 400
 
@@ -262,19 +270,19 @@ class PKStatus(Resource):
 def generate_pk_question(words):
     # 随机选择一个单词作为正确答案
     correct_word = random.choice(words)
-    
+
     # 获取迷惑选项
     distractors = get_distractors(correct_word['word'])
-    
+
     # 构建选项列表
     options = [correct_word['meaning']] + [d['meaning'] for d in distractors]
-    
+
     # 随机打乱选项顺序
     random.shuffle(options)
-    
+
     # 记录正确选项的索引
     correct_index = options.index(correct_word['meaning'])
-    
+
     return {
         'word': correct_word['word'],
         'phonetic': correct_word['phonetic'],

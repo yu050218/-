@@ -197,9 +197,17 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 
+.app.dark .result-item {
+  background-color: #1e293b;
+}
+
 .result-item:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.app.dark .result-item:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .result-item .label {
@@ -207,6 +215,10 @@ onMounted(async () => {
   color: #64748b;
   margin-bottom: 8px;
   font-weight: 600;
+}
+
+.app.dark .result-item .label {
+  color: #94a3b8;
 }
 
 .result-item .value {
@@ -254,10 +266,19 @@ th, td {
   border-bottom: 1px solid #e2e8f0;
 }
 
+.app.dark th, .app.dark td {
+  border-bottom-color: #334155;
+}
+
 th {
   background-color: #f8fafc;
   font-weight: 600;
   color: #64748b;
+}
+
+.app.dark th {
+  background-color: #1e293b;
+  color: #94a3b8;
 }
 
 tr {
@@ -265,7 +286,24 @@ tr {
 }
 
 tr:hover {
-  background-color: #f8fafc;
+  background-color: #f1f5f9;
+}
+
+.app.dark tr {
+  background-color: transparent;
+}
+
+.app.dark tr:hover {
+  background-color: #334155;
+}
+
+td {
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.app.dark td {
+  color: #e2e8f0;
 }
 
 .report-buttons {
