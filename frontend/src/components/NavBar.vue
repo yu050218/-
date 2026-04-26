@@ -9,7 +9,7 @@
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
         </span>
-        <span class="brand-text">词汇评估工具</span>
+        <span class="brand-text">词小记</span>
       </router-link>
     </div>
 

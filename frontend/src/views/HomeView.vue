@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <h1>词汇评估工具</h1>
+    <h1>词小记</h1>
     <div class="features">
       <div class="feature-card card animate-fade-in" style="animation-delay: 0.1s">
         <div class="feature-icon">
