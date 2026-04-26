@@ -1,10 +1,14 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_restful import Api
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 api = Api(app)
+
+# 前端静态文件目录
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'dist')
 
 # 导入路由
 from api.user import UserRegister, UserLogin, UserProfile
@@ -28,5 +32,14 @@ api.add_resource(AdminUsers, '/api/admin/users', '/api/admin/users/<user_id>')
 api.add_resource(AdminTestRecords, '/api/admin/users/<user_id>/records')
 api.add_resource(AdminWordBank, '/api/admin/word-bank')
 
+# 提供前端静态文件
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path != "" and os.path.exists(os.path.join(FRONTEND_DIR, path)):
+        return send_from_directory(FRONTEND_DIR, path)
+    else:
+        return send_from_directory(FRONTEND_DIR, 'index.html')
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000)
+    app.run(debug=False, host='0.0.0.0', port=8000)
