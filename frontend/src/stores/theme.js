@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 export const useThemeStore = defineStore('theme', {
   state: () => ({
     isDark: false,
-    primaryColor: '#165DFF'
+    primaryColor: '#1e40af'
   }),
   
   actions: {

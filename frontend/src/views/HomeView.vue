@@ -3,19 +3,39 @@
     <h1>词汇评估工具</h1>
     <div class="features">
       <div class="feature-card card animate-fade-in" style="animation-delay: 0.1s">
-        <div class="feature-icon">📚</div>
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
         <h2>词汇测试</h2>
         <p>测试你的词汇量，获得详细的评估报告</p>
         <router-link to="/test" class="btn btn-primary">开始测试</router-link>
       </div>
       <div class="feature-card card animate-fade-in" style="animation-delay: 0.2s">
-        <div class="feature-icon">⚔️</div>
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6L16 6a5 5 0 0 1 1 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
         <h2>单词PK对战</h2>
         <p>与其他用户实时对战，检验你的词汇水平</p>
         <router-link to="/pk" class="btn btn-primary">开始对战</router-link>
       </div>
       <div class="feature-card card animate-fade-in" style="animation-delay: 0.3s">
-        <div class="feature-icon">📋</div>
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
         <h2>错题本</h2>
         <p>记录错题，复习巩固，基于艾宾浩斯遗忘曲线</p>
         <router-link to="/wrong-words" class="btn btn-primary" v-if="userStore.isLoggedIn">查看错题</router-link>
@@ -40,6 +60,8 @@ const userStore = useUserStore()
 .home {
   text-align: center;
   padding: 40px 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .home h1 {
@@ -50,23 +72,44 @@ const userStore = useUserStore()
 
 .features {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   margin-bottom: 60px;
   flex-wrap: wrap;
   gap: 30px;
 }
 
 .feature-card {
-  width: 320px;
+  width: 340px;
   margin: 10px;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
 }
 
 .feature-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
-  animation: bounce 2s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.1), rgba(59, 130, 246, 0.1));
+  color: #1e40af;
+  transition: all 0.3s ease;
+}
+
+.app.dark .feature-icon {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(147, 197, 253, 0.1));
+  color: #60a5fa;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
 }
 
 .feature-card h2 {
@@ -78,12 +121,18 @@ const userStore = useUserStore()
   margin-bottom: 30px;
   font-size: 16px;
   line-height: 1.6;
+  color: #64748b;
+}
+
+.app.dark .feature-card p {
+  color: #94a3b8;
 }
 
 .user-stats {
   max-width: 600px;
   margin: 0 auto;
   text-align: center;
+  padding: 32px;
 }
 
 .user-stats h2 {
@@ -96,19 +145,11 @@ const userStore = useUserStore()
   font-size: 14px;
 }
 
-/* 动画效果 */
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  60% {
-    transform: translateY(-5px);
-  }
+.app.dark .stats-hint {
+  color: #94a3b8;
 }
 
+/* 动画效果 */
 .animate-fade-in {
   opacity: 0;
   transform: translateY(20px);
@@ -140,6 +181,10 @@ const userStore = useUserStore()
   .feature-card {
     width: 100%;
     max-width: 320px;
+  }
+
+  .user-stats {
+    padding: 24px;
   }
 }
 </style>

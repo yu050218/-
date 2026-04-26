@@ -8,13 +8,15 @@ export const useTestStore = defineStore('test', {
     totalQuestions: 30,
     currentWord: null,
     testResult: null,
-    testRecords: []
+    testRecords: [],
+    totalWrong: 0,
+    consecutiveWrong: 0
   }),
   actions: {
     async startTest(testType) {
       try {
         console.log('Starting test with type:', testType)
-        const response = await axios.post('http://localhost:8000/api/test/start', {
+        const response = await axios.post('/api/test/start', {
           test_type: testType
         }, {
           headers: {
@@ -27,6 +29,8 @@ export const useTestStore = defineStore('test', {
         this.currentQuestion = response.data.current_question
         this.totalQuestions = response.data.total_questions
         this.currentWord = response.data.question
+        this.totalWrong = 0
+        this.consecutiveWrong = 0
         return response.data
       } catch (error) {
         console.error('Error starting test:', error)
@@ -59,6 +63,15 @@ export const useTestStore = defineStore('test', {
           headers: headers
         })
         console.log('Submit answer response:', response.data)
+        
+        // 更新错题数和连续错题数
+        if (response.data.total_wrong !== undefined) {
+          this.totalWrong = response.data.total_wrong
+        }
+        if (response.data.consecutive_wrong !== undefined) {
+          this.consecutiveWrong = response.data.consecutive_wrong
+        }
+        
         if (response.data.question) {
           this.currentQuestion = response.data.current_question
           this.currentWord = response.data.question
@@ -123,6 +136,8 @@ export const useTestStore = defineStore('test', {
       this.totalQuestions = 30
       this.currentWord = null
       this.testResult = null
+      this.totalWrong = 0
+      this.consecutiveWrong = 0
     }
   }
 })
