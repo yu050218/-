@@ -129,6 +129,30 @@ export const useTestStore = defineStore('test', {
         throw error.response.data
       }
     },
+    async submitReviewAnswer(word, isCorrect) {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.log('No token found, skipping review answer submission')
+          return
+        }
+        
+        const response = await axios.post('/api/test/review-submit', {
+          word: word,
+          is_correct: isCorrect
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+        console.log('Review answer submitted successfully:', response.data)
+        return response.data
+      } catch (error) {
+        console.error('Error submitting review answer:', error)
+        throw error.response ? error.response.data : error
+      }
+    },
     resetTest() {
       this.sessionId = null
       localStorage.removeItem('testSessionId')

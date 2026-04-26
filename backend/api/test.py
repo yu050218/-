@@ -343,6 +343,57 @@ class WrongWords(Resource):
         } for word in wrong_words], 200
 
 
+class ReviewSubmit(Resource):
+    def post(self):
+        try:
+            auth_header = request.headers.get('Authorization')
+            if not auth_header:
+                return {'message': 'Authorization header is required'}, 401
+
+            token = auth_header.split(' ')[1] if len(auth_header.split(' ')) > 1 else auth_header
+            user_id = verify_token(token)
+            if not user_id:
+                return {'message': 'Invalid or expired token'}, 401
+
+            data = request.get_json()
+            if not data:
+                return {'message': 'No JSON data provided'}, 400
+
+            word = data.get('word')
+            is_correct = data.get('is_correct')
+
+            if word is None or is_correct is None:
+                return {'message': 'Word and is_correct are required'}, 400
+
+            session = Session()
+            wrong_word = session.query(WrongWord).filter_by(
+                user_id=user_id,
+                word=word
+            ).first()
+
+            if wrong_word:
+                if is_correct:
+                    wrong_word.correct_count += 1
+                    wrong_word.last_correct_date = datetime.now()
+                    if wrong_word.correct_count >= 10:
+                        session.delete(wrong_word)
+                else:
+                    wrong_word.wrong_count += 1
+                    wrong_word.last_wrong_date = datetime.now()
+                session.commit()
+                session.close()
+            else:
+                session.close()
+                return {'message': 'Word not found in wrong words'}, 404
+
+            return {'message': 'Review answer submitted successfully'}, 200
+        except Exception as e:
+            print(f"Error in ReviewSubmit: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return {'message': f'Internal server error: {str(e)}'}, 500
+
+
 def generate_question(correct_word):
     # 获取迷惑选项
     distractors = get_distractors(correct_word['word'])

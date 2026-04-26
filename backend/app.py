@@ -8,7 +8,7 @@ api = Api(app)
 
 # 导入路由
 from api.user import UserRegister, UserLogin, UserProfile
-from api.test import TestStart, TestSubmit, TestRecordResource, WrongWords
+from api.test import TestStart, TestSubmit, TestRecordResource, WrongWords, ReviewSubmit
 from api.pk import PKMatch, PKStatus
 from api.admin import AdminUsers, AdminTestRecords, AdminWordBank
 
@@ -20,6 +20,7 @@ api.add_resource(TestStart, '/api/test/start')
 api.add_resource(TestSubmit, '/api/test/submit')
 api.add_resource(TestRecordResource, '/api/test/record')
 api.add_resource(WrongWords, '/api/test/wrong-words')
+api.add_resource(ReviewSubmit, '/api/test/review-submit')
 api.add_resource(PKMatch, '/api/pk/match')
 api.add_resource(PKStatus, '/api/pk/status/<match_id>')
 # 后台管理路由

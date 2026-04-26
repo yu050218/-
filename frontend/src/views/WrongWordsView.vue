@@ -174,6 +174,7 @@ const submitReviewAnswer = async (index) => {
   if (userStore.token) {
     try {
       console.log('Review answer submitted:', { word: currentReviewWord.value.word, isCorrect })
+      await testStore.submitReviewAnswer(currentReviewWord.value.word, isCorrect)
     } catch (error) {
       console.error('Error submitting review answer:', error)
     }
