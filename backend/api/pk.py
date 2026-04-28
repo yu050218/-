@@ -66,6 +66,8 @@ class PKMatch(Resource):
                 'player2': player2,
                 'score1': 0,
                 'score2': 0,
+                'time1': 0,  # 玩家1总用时
+                'time2': 0,  # 玩家2/AI总用时
                 'current_round': 0,
                 'max_rounds': 10,
                 'status': 'active',  # active, finished
@@ -82,7 +84,9 @@ class PKMatch(Resource):
                 'message': 'Match found',
                 'match_id': match_id,
                 'opponent_id': player2 if user_id == player1 else player1,
-                'question': question
+                'question': question,
+                'time1': 0,
+                'time2': 0
             }, 200
         else:
             # 没有其他用户，安排人机对战
@@ -102,6 +106,8 @@ class PKMatch(Resource):
                 'player2': 'AI',  # AI对手
                 'score1': 0,
                 'score2': 0,
+                'time1': 0,  # 玩家总用时
+                'time2': 0,  # AI总用时
                 'current_round': 0,
                 'max_rounds': 10,
                 'status': 'active',  # active, finished
@@ -118,7 +124,9 @@ class PKMatch(Resource):
                 'message': 'No opponents found, matched with AI',
                 'match_id': match_id,
                 'opponent_id': 'AI',
-                'question': question
+                'question': question,
+                'time1': 0,
+                'time2': 0
             }, 200
 
     def cleanup_timeout_queue(self):
@@ -128,14 +136,24 @@ class PKMatch(Resource):
         match_queue = [item for item in match_queue if current_time - item['join_time'] < MATCH_TIMEOUT]
 
     def put(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('match_id', required=True, help='Match ID is required')
-        parser.add_argument('action', required=True, help='Action is required')  # join, leave, submit
-        parser.add_argument('answer', required=False)  # option index or 'unknown'
-        args = parser.parse_args()
+        print("=== PKMatch.put called ===")
+        print(f"Request method: {request.method}")
+        print(f"Request path: {request.path}")
+        data = request.get_json() or {}
+        print(f"Request data: {data}")
+        
+        match_id = data.get('match_id')
+        action = data.get('action')
+        answer = data.get('answer')
+        time_spent = data.get('time_spent', 0)
 
-        match_id = args['match_id']
-        action = args['action']
+        print(f"Parsed params - match_id: {match_id}, action: {action}, answer: {answer}, time_spent: {time_spent}")
+
+        if not match_id:
+            return {'message': 'Match ID is required'}, 400
+        
+        if not action:
+            return {'message': 'Action is required'}, 400
 
         # 如果是离开操作，先获取用户ID
         auth_header = request.headers.get('Authorization')
@@ -170,11 +188,21 @@ class PKMatch(Resource):
             if user_id != match['player1']:
                 return {'message': 'You are not a participant in this match'}, 403
 
-            # 处理提交答案
-            answer = args['answer']
+            print(f"=== Submit action received ===")
+            print(f"match_id: {match_id}")
+            print(f"answer: {answer}")
+            print(f"time_spent: {time_spent}")
+            print(f"is_ai_match: {match.get('is_ai_match')}")
+            print(f"current time1: {match['time1']}")
+            print(f"current time2: {match['time2']}")
+
+            # 处理提交答案（answer 和 time_spent 已从请求体获取）
             is_correct = False
             if answer != 'unknown':
                 is_correct = int(answer) == match['current_word']['correct_index']
+
+            # 更新用户用时
+            match['time1'] += time_spent
 
             # 如果用户答错，将错题添加到错题本
             if not is_correct:
@@ -213,19 +241,37 @@ class PKMatch(Resource):
                 ai_correct = random.random() < 0.8
                 if ai_correct:
                     match['score2'] += 1
+                # AI用时（随机1-3秒）
+                ai_time = random.randint(1, 3)
+                match['time2'] += ai_time
+                print(f"AI time added: {ai_time}, total AI time: {match['time2']}")
 
             match['current_round'] += 1
 
             # 检查是否结束
             if match['current_round'] >= match['max_rounds']:
                 match['status'] = 'finished'
-                winner = match['player1'] if match['score1'] > match['score2'] else match['player2']
-                if match['score1'] == match['score2']:
-                    winner = None  # 平局
+                
+                # 判定胜负：先比较得分，得分相同则比较用时
+                if match['score1'] > match['score2']:
+                    winner = match['player1']
+                elif match['score2'] > match['score1']:
+                    winner = match['player2']
+                else:
+                    # 得分相同，用时较短的获胜
+                    if match['time1'] < match['time2']:
+                        winner = match['player1']
+                    elif match['time2'] < match['time1']:
+                        winner = match['player2']
+                    else:
+                        winner = None  # 完全平局
+                
                 return {
                     'status': 'finished',
                     'score1': match['score1'],
                     'score2': match['score2'],
+                    'time1': match['time1'],
+                    'time2': match['time2'],
                     'winner': winner,
                     'is_ai_match': match['is_ai_match']
                 }, 200
@@ -238,6 +284,7 @@ class PKMatch(Resource):
                     'current_round': match['current_round'],
                     'score1': match['score1'],
                     'score2': match['score2'],
+                    'time2': match['time2'],
                     'question': question,
                     'is_correct': is_correct
                 }, 200
@@ -260,6 +307,8 @@ class PKStatus(Resource):
             'player2': match['player2'],
             'score1': match['score1'],
             'score2': match['score2'],
+            'time1': match['time1'],
+            'time2': match['time2'],
             'current_round': match['current_round'],
             'max_rounds': match['max_rounds'],
             'status': match['status'],

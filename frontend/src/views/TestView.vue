@@ -74,7 +74,7 @@
       </div>
       <div class="result-buttons">
         <button @click="resetTest" class="btn btn-secondary">再测一次</button>
-        <router-link to="/report" class="btn btn-primary">查看报告</router-link>
+        <router-link v-if="userStore.isLoggedIn" to="/report" class="btn btn-primary">查看报告</router-link>
       </div>
     </div>
   </div>
@@ -83,9 +83,11 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTestStore } from '../stores/test'
+import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 
 const testStore = useTestStore()
+const userStore = useUserStore()
 const router = useRouter()
 const isAnswered = ref(false)
 const isCorrect = ref(false)
@@ -212,13 +214,10 @@ const submitAnswer = async (answer) => {
         correctIndex.value = null
       }, 500)
     } else {
-      // 测试完成，跳转到报告页面
+      // 测试完成，显示结果页面，等待用户点击查看报告
       isAnswered.value = true
-      isCorrect.value = true // 显示正确答案的样式
-      
-      setTimeout(() => {
-        router.push('/report')
-      }, 1500)
+      isCorrect.value = true
+      stopTimer()
     }
   } catch (error) {
     console.error('Error submitting answer:', error)

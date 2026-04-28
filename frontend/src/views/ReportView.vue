@@ -2,66 +2,83 @@
   <div class="report">
     <h1>测试报告</h1>
 
-    <!-- 最新测试结果 -->
-    <div v-if="testStore.testResult" class="latest-result card animate-fade-in" style="animation-delay: 0.1s">
-      <h2>最新测试结果</h2>
-      <div class="result-card">
-        <div class="result-item">
-          <span class="label">词汇量</span>
-          <span class="value">{{ testStore.testResult.vocabulary_size }}</span>
-        </div>
-        <div class="result-item">
-          <span class="label">等级</span>
-          <span class="value">{{ testStore.testResult.level }}</span>
-        </div>
-        <div class="result-item">
-          <span class="label">正确率</span>
-          <span class="value">{{ (testStore.testResult.correct_rate * 100).toFixed(1) }}%</span>
-        </div>
+    <!-- 未登录状态 -->
+    <div v-if="!userStore.isLoggedIn" class="not-logged-in card animate-fade-in">
+      <div class="icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path>
+          <path d="M13 19l6-6"></path>
+          <path d="M16 16l4 4"></path>
+          <path d="M19 21l2-2"></path>
+        </svg>
       </div>
+      <p>请先登录以查看测试报告</p>
+      <router-link to="/login" class="btn btn-primary">登录</router-link>
     </div>
 
-    <!-- 历史趋势图 -->
-    <div class="history-chart card animate-fade-in" style="animation-delay: 0.2s">
-      <h2>历史测试趋势</h2>
-      <div class="chart-container">
-        <canvas ref="chartCanvas" id="chartCanvas"></canvas>
+    <!-- 已登录状态 -->
+    <template v-else>
+      <!-- 最新测试结果 -->
+      <div v-if="testStore.testResult" class="latest-result card animate-fade-in" style="animation-delay: 0.1s">
+        <h2>最新测试结果</h2>
+        <div class="result-card">
+          <div class="result-item">
+            <span class="label">词汇量</span>
+            <span class="value">{{ testStore.testResult.vocabulary_size }}</span>
+          </div>
+          <div class="result-item">
+            <span class="label">等级</span>
+            <span class="value">{{ testStore.testResult.level }}</span>
+          </div>
+          <div class="result-item">
+            <span class="label">正确率</span>
+            <span class="value">{{ (testStore.testResult.correct_rate * 100).toFixed(1) }}%</span>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- 历史测试记录 -->
-    <div class="history-records card animate-fade-in" style="animation-delay: 0.3s">
-      <h2>历史测试记录</h2>
-      <div class="records-table">
-        <table>
-          <thead>
-            <tr>
-              <th>测试日期</th>
-              <th>答对题数</th>
-              <th>总题数</th>
-              <th>正确率</th>
-              <th>词汇量</th>
-              <th>等级</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="record in recentTestRecords" :key="record.id">
-              <td>{{ formatDate(record.test_date) }}</td>
-              <td>{{ record.correct_count }}</td>
-              <td>{{ record.total_count }}</td>
-              <td>{{ ((record.correct_count / record.total_count) * 100).toFixed(1) }}%</td>
-              <td>{{ record.vocabulary_size }}</td>
-              <td>{{ record.level }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- 历史趋势图 -->
+      <div class="history-chart card animate-fade-in" style="animation-delay: 0.2s">
+        <h2>历史测试趋势</h2>
+        <div class="chart-container">
+          <canvas ref="chartCanvas" id="chartCanvas"></canvas>
+        </div>
       </div>
-    </div>
 
-    <div class="report-buttons card animate-fade-in" style="animation-delay: 0.4s">
-      <router-link to="/test" class="btn btn-primary">再测一次</router-link>
-      <router-link to="/" class="btn btn-secondary">返回首页</router-link>
-    </div>
+      <!-- 历史测试记录 -->
+      <div class="history-records card animate-fade-in" style="animation-delay: 0.3s">
+        <h2>历史测试记录</h2>
+        <div class="records-table">
+          <table>
+            <thead>
+              <tr>
+                <th>测试日期</th>
+                <th>答对题数</th>
+                <th>总题数</th>
+                <th>正确率</th>
+                <th>词汇量</th>
+                <th>等级</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="record in recentTestRecords" :key="record.id">
+                <td>{{ formatDate(record.test_date) }}</td>
+                <td>{{ record.correct_count }}</td>
+                <td>{{ record.total_count }}</td>
+                <td>{{ ((record.correct_count / record.total_count) * 100).toFixed(1) }}%</td>
+                <td>{{ record.vocabulary_size }}</td>
+                <td>{{ record.level }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="report-buttons card animate-fade-in" style="animation-delay: 0.4s">
+        <router-link to="/test" class="btn btn-primary">再测一次</router-link>
+        <router-link to="/" class="btn btn-secondary">返回首页</router-link>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -326,6 +343,30 @@ td {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.not-logged-in {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.not-logged-in .icon {
+  margin-bottom: 20px;
+  color: #64748b;
+}
+
+.app.dark .not-logged-in .icon {
+  color: #60a5fa;
+}
+
+.not-logged-in p {
+  font-size: 18px;
+  color: #64748b;
+  margin-bottom: 30px;
+}
+
+.app.dark .not-logged-in p {
+  color: #94a3b8;
 }
 
 /* 响应式设计 */

@@ -36,15 +36,18 @@
           <div class="player you">
             <span class="player-name">你</span>
             <span class="score">{{ score1 }}</span>
+            <span class="time">{{ formatTime(time1) }}</span>
           </div>
           <div class="vs">VS</div>
           <div class="player opponent">
             <span class="player-name">{{ isAiMatch ? 'AI' : '对手' }}</span>
             <span class="score">{{ score2 }}</span>
+            <span class="time">{{ formatTime(time2) }}</span>
           </div>
         </div>
         <div class="round-info">
           <span class="round-badge">第 {{ currentRound }} / 10 回合</span>
+          <span class="timer-badge">⏱️ {{ formatTime(currentTime) }}</span>
         </div>
         <div class="word-info">
           <h3>{{ currentWord }}</h3>
@@ -95,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useUserStore } from '../stores/user'
 import axios from 'axios'
 
@@ -113,8 +116,42 @@ const options = ref([])
 const winner = ref('')
 const isAiMatch = ref(false)
 
+// 计时相关变量
+const currentTime = ref(0)
+const time1 = ref(0) // 用户总用时
+const time2 = ref(0) // AI/对手总用时
+let timer = null
+let roundStartTime = 0
+
+const formatTime = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+const startTimer = () => {
+  stopTimer()
+  currentTime.value = 0
+  roundStartTime = Date.now()
+  timer = setInterval(() => {
+    currentTime.value++
+  }, 1000)
+}
+
+const stopTimer = () => {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+
 const startMatching = async () => {
   isMatching.value = true
+  // 重置计时
+  time1.value = 0
+  time2.value = 0
+  currentTime.value = 0
+  
   try {
     // 先尝试离开之前的对战（如果有）
     try {
@@ -146,6 +183,11 @@ const startMatching = async () => {
       currentPhonetic.value = response.data.question.phonetic
       options.value = response.data.question.options
       isAiMatch.value = response.data.opponent_id === 'AI'
+      // 更新时间数据
+      time1.value = response.data.time1 || 0
+      time2.value = response.data.time2 || 0
+      // 开始计时
+      startTimer()
     } else if (response.status === 202) {
       // 等待对手
       setTimeout(() => {
@@ -173,15 +215,30 @@ const cancelMatching = async () => {
 
 const submitAnswer = async (answer) => {
   try {
+    // 记录当前回合用时
+    const roundTime = currentTime.value
+    
+    console.log('=== Submitting answer ===')
+    console.log('matchId:', matchId.value)
+    console.log('answer:', answer)
+    console.log('time_spent:', roundTime)
+    
     const response = await axios.put('/api/pk/match', {
       match_id: matchId.value,
       action: 'submit',
-      answer: answer
+      answer: answer,
+      time_spent: roundTime
     }, {
       headers: {
         Authorization: `Bearer ${userStore.token}`
       }
     })
+    
+    console.log('Response data:', response.data)
+    
+    // 更新用户总用时
+    time1.value += roundTime
+    
     if (response.data.status === 'active') {
       score1.value = response.data.score1
       score2.value = response.data.score2
@@ -189,11 +246,25 @@ const submitAnswer = async (answer) => {
       currentWord.value = response.data.question.word
       currentPhonetic.value = response.data.question.phonetic
       options.value = response.data.question.options
+      // AI对手的用时（随机1-3秒）
+      if (isAiMatch.value) {
+        time2.value += Math.floor(Math.random() * 3) + 1
+      }
+      // 重置当前回合计时
+      currentTime.value = 0
     } else if (response.data.status === 'finished') {
+      stopTimer()
       score1.value = response.data.score1
       score2.value = response.data.score2
       matchStatus.value = 'finished'
       isAiMatch.value = response.data.is_ai_match
+      // 更新最终用时
+      if (response.data.time1 !== undefined) {
+        time1.value = response.data.time1
+      }
+      if (response.data.time2 !== undefined) {
+        time2.value = response.data.time2
+      }
       winner.value = response.data.winner === userStore.user.id ? 'you' : (response.data.winner === 'AI' ? 'opponent' : 'opponent')
     }
   } catch (error) {
@@ -222,6 +293,7 @@ const leaveMatch = async () => {
 }
 
 const resetPK = () => {
+  stopTimer()
   matchId.value = null
   matchStatus.value = ''
   score1.value = 0
@@ -231,7 +303,14 @@ const resetPK = () => {
   winner.value = ''
   isAiMatch.value = false
   isMatching.value = false
+  time1.value = 0
+  time2.value = 0
+  currentTime.value = 0
 }
+
+onUnmounted(() => {
+  stopTimer()
+})
 </script>
 
 <style scoped>
@@ -358,6 +437,16 @@ const resetPK = () => {
 
 .player.opponent .score {
   color: #ef4444;
+}
+
+.time {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.app.dark .time {
+  color: #94a3b8;
 }
 
 .vs {
