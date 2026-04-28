@@ -61,28 +61,36 @@
             <div class="card-icon">💡</div>
             <h3>{{ currentWord.meaning }}</h3>
             <p class="difficulty">难度: {{ currentWord.difficulty }}</p>
+            <p class="spelling-hint">请默写这个单词：</p>
           </div>
         </div>
       </div>
 
+      <!-- 默写输入区域 -->
+      <div v-if="isFlipped && currentWord" class="spelling-section card animate-fade-in">
+        <div class="spelling-input-wrapper">
+          <input 
+            v-model="spellingInput" 
+            type="text" 
+            class="spelling-input"
+            placeholder="输入单词..."
+            @keyup.enter="checkSpelling"
+            ref="spellingInputRef"
+          />
+        </div>
+        <div class="spelling-actions">
+          <button @click="checkSpelling" class="btn btn-primary">确认答案</button>
+          <button @click="skipSpelling" class="btn btn-secondary">跳过</button>
+        </div>
+        <!-- 答案反馈 -->
+        <div v-if="showSpellingResult" class="spelling-result" :class="{ correct: spellingCorrect, wrong: !spellingCorrect }">
+          <div class="result-icon">{{ spellingCorrect ? '✓' : '✗' }}</div>
+          <p>{{ spellingCorrect ? '回答正确！' : `正确答案是: ${currentWord.word}` }}</p>
+        </div>
+      </div>
+
       <!-- 操作按钮 -->
-      <div class="actions">
-        <button 
-          v-if="isFlipped" 
-          @click="markWrong" 
-          class="btn btn-wrong"
-        >
-          <span class="btn-icon">✗</span>
-          <span>不认识</span>
-        </button>
-        <button 
-          v-if="isFlipped" 
-          @click="markCorrect" 
-          class="btn btn-correct"
-        >
-          <span class="btn-icon">✓</span>
-          <span>认识</span>
-        </button>
+      <div class="actions" v-if="!isFlipped">
         <button 
           v-if="!words.length" 
           @click="loadWords" 
@@ -109,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useUserStore } from '../stores/user'
 import axios from 'axios'
 
@@ -122,6 +130,12 @@ const lastResult = ref(null)
 const correctCount = ref(0)
 const wrongCount = ref(0)
 const showComplete = ref(false)
+
+// 默写相关状态
+const spellingInput = ref('')
+const showSpellingResult = ref(false)
+const spellingCorrect = ref(false)
+const spellingInputRef = ref(null)
 
 const currentWord = computed(() => {
   return words.value[currentIndex.value] || null
@@ -172,25 +186,55 @@ const loadWords = async () => {
 }
 
 const flipCard = () => {
-  if (!showComplete.value) {
+  if (!showComplete.value && !showSpellingResult.value) {
     isFlipped.value = !isFlipped.value
+    if (isFlipped.value) {
+      // 翻转后聚焦到输入框
+      nextTick(() => {
+        if (spellingInputRef.value) {
+          spellingInputRef.value.focus()
+        }
+      })
+    }
   }
 }
 
-const markCorrect = () => {
-  correctCount.value++
-  lastResult.value = 'correct'
-  nextWord()
+const checkSpelling = () => {
+  if (!spellingInput.value.trim()) return
+  
+  const input = spellingInput.value.trim().toLowerCase()
+  const correctWord = currentWord.value.word.toLowerCase()
+  
+  spellingCorrect.value = input === correctWord
+  showSpellingResult.value = true
+  
+  if (spellingCorrect.value) {
+    correctCount.value++
+    lastResult.value = 'correct'
+  } else {
+    wrongCount.value++
+    lastResult.value = 'wrong'
+    addToWrongWords()
+  }
+  
+  // 延迟后进入下一个单词
+  setTimeout(() => {
+    nextWord()
+  }, 1500)
 }
 
-const markWrong = () => {
+const skipSpelling = () => {
+  // 跳过也算错误
   wrongCount.value++
   lastResult.value = 'wrong'
-  
-  // 将错题添加到错题本
+  spellingCorrect.value = false
+  showSpellingResult.value = true
   addToWrongWords()
   
-  nextWord()
+  // 显示正确答案后再进入下一个单词
+  setTimeout(() => {
+    nextWord()
+  }, 1500)
 }
 
 const addToWrongWords = async () => {
@@ -216,6 +260,8 @@ const nextWord = () => {
   setTimeout(() => {
     isFlipped.value = false
     lastResult.value = null
+    showSpellingResult.value = false
+    spellingInput.value = ''
     
     if (currentIndex.value < words.value.length - 1) {
       currentIndex.value++
@@ -232,6 +278,8 @@ const restart = () => {
   showComplete.value = false
   isFlipped.value = false
   lastResult.value = null
+  showSpellingResult.value = false
+  spellingInput.value = ''
 }
 
 onMounted(() => {
@@ -453,6 +501,12 @@ onMounted(() => {
   opacity: 0.8;
 }
 
+.card-back .spelling-hint {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-top: 16px;
+}
+
 .actions {
   display: flex;
   justify-content: center;
@@ -564,6 +618,108 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   gap: 16px;
+}
+
+/* 默写区域样式 */
+.spelling-section {
+  padding: 30px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.spelling-input-wrapper {
+  margin-bottom: 20px;
+}
+
+.spelling-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px 20px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.app.dark .spelling-input {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.spelling-input:focus {
+  border-color: #165DFF;
+  box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
+}
+
+.spelling-input::placeholder {
+  color: #94a3b8;
+}
+
+.spelling-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.spelling-result {
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 16px;
+  animation: fadeInUp 0.3s ease;
+}
+
+.spelling-result.correct {
+  background-color: #f0fdf4;
+  border: 2px solid #bbf7d0;
+}
+
+.spelling-result.wrong {
+  background-color: #fef2f2;
+  border: 2px solid #fee2e2;
+}
+
+.app.dark .spelling-result.correct {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.app.dark .spelling-result.wrong {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.spelling-result .result-icon {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.spelling-result.correct .result-icon {
+  color: #10b981;
+}
+
+.spelling-result.wrong .result-icon {
+  color: #ef4444;
+}
+
+.spelling-result p {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.spelling-result.correct p {
+  color: #10b981;
+}
+
+.spelling-result.wrong p {
+  color: #ef4444;
 }
 
 /* 动画效果 */
