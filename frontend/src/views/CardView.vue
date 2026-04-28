@@ -52,13 +52,11 @@
           @click="flipCard"
         >
           <div class="card-face card-front">
-            <div class="card-icon">📖</div>
             <h2>{{ currentWord.word }}</h2>
             <p class="phonetic">{{ currentWord.phonetic }}</p>
             <p class="hint">点击卡片查看释义</p>
           </div>
           <div class="card-face card-back">
-            <div class="card-icon">💡</div>
             <h3>{{ currentWord.meaning }}</h3>
             <p class="difficulty">难度: {{ currentWord.difficulty }}</p>
             <p class="spelling-hint">请默写这个单词：</p>
@@ -440,17 +438,28 @@ onMounted(() => {
 }
 
 .card-front {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: #1e293b;
+  border-color: #e2e8f0;
 }
 
 .app.dark .card-front {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+  border-color: #334155;
 }
 
 .card-back {
   transform: rotateY(180deg);
-  background: linear-gradient(135deg, #165DFF 0%, #0EA5E9 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: #1e293b;
+  border-color: #e2e8f0;
+}
+
+.app.dark .card-back {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   color: white;
+  border-color: #334155;
 }
 
 .card-icon {
