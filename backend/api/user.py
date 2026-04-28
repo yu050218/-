@@ -80,13 +80,19 @@ class UserProfile(Resource):
         if not user:
             return {'message': 'User not found'}, 404
 
-        return {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'is_admin': user.is_admin,
-            'created_at': user.created_at
-        }, 200
+        print(f"User data: id={user.id}, username={user.username}, email={user.email}, created_at={user.created_at}")
+        try:
+            created_at_str = user.created_at.isoformat() if user.created_at else None
+            return {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_admin': user.is_admin,
+                'created_at': created_at_str
+            }, 200
+        except Exception as e:
+            print(f"Error formatting user data: {e}")
+            return {'message': 'Error formatting user data'}, 500
 
     def put(self):
         # 从请求头获取JWT令牌
