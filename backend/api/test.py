@@ -7,8 +7,16 @@ from utils.excel_reader import get_assessment_words, get_distractors
 from flask import request
 import random
 from datetime import datetime
+import os
 
-engine = create_engine('sqlite:///database/vocab.db')
+# 获取当前文件的目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 从 api 目录向上两级到达项目根目录
+project_root = os.path.dirname(os.path.dirname(current_dir))
+# 构建数据库文件路径
+database_path = os.path.join(project_root, 'database', 'vocab.db')
+
+engine = create_engine(f'sqlite:///{database_path}')
 Session = sessionmaker(bind=engine)
 
 # 测试会话管理
@@ -341,6 +349,58 @@ class WrongWords(Resource):
             'last_wrong_date': word.last_wrong_date.isoformat() if word.last_wrong_date else None,
             'last_correct_date': word.last_correct_date.isoformat() if word.last_correct_date else None
         } for word in wrong_words], 200
+    
+    def post(self):
+        # 添加新的错题
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return {'message': 'Authorization header is required'}, 401
+
+        token = auth_header.split(' ')[1] if len(auth_header.split(' ')) > 1 else auth_header
+        user_id = verify_token(token)
+        if not user_id:
+            return {'message': 'Invalid or expired token'}, 401
+
+        data = request.get_json()
+        if not data:
+            return {'message': 'No JSON data provided'}, 400
+
+        word = data.get('word')
+        phonetic = data.get('phonetic')
+        meaning = data.get('meaning')
+
+        if not word or not meaning:
+            return {'message': 'Word and meaning are required'}, 400
+
+        session = Session()
+        # 检查单词是否已经在错题本中
+        existing_word = session.query(WrongWord).filter_by(
+            user_id=user_id,
+            word=word
+        ).first()
+
+        if existing_word:
+            # 如果已存在，增加错误计数
+            existing_word.wrong_count += 1
+            existing_word.last_wrong_date = datetime.now()
+        else:
+            # 如果不存在，创建新的错题记录
+            new_wrong_word = WrongWord(
+                user_id=user_id,
+                word=word,
+                phonetic=phonetic or '',
+                meaning=meaning,
+                difficulty='unknown',
+                wrong_count=1,
+                correct_count=0,
+                last_wrong_date=datetime.now()
+            )
+            session.add(new_wrong_word)
+
+        session.commit()
+        session.close()
+
+        return {'message': 'Word added to wrong words successfully'}, 200
 
 
 class ReviewSubmit(Resource):

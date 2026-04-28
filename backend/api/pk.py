@@ -8,8 +8,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.models import WrongWord
 from datetime import datetime
+import os
 
-engine = create_engine('sqlite:///database/vocab.db')
+# 获取当前文件的目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 从 api 目录向上两级到达项目根目录
+project_root = os.path.dirname(os.path.dirname(current_dir))
+# 构建数据库文件路径
+database_path = os.path.join(project_root, 'database', 'vocab.db')
+
+engine = create_engine(f'sqlite:///{database_path}')
 Session = sessionmaker(bind=engine)
 
 # 匹配队列，存储用户ID和加入时间

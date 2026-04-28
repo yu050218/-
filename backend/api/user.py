@@ -5,60 +5,107 @@ from sqlalchemy.orm import sessionmaker
 from models.models import User
 from utils.jwt_utils import generate_token, verify_token
 from flask import request
+import os
 
-engine = create_engine('sqlite:///database/vocab.db')
+# 获取当前文件的目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 从 api 目录向上两级到达项目根目录
+project_root = os.path.dirname(os.path.dirname(current_dir))
+# 构建数据库文件路径
+database_path = os.path.join(project_root, 'database', 'vocab.db')
+
+print(f"[DEBUG] Database path: {database_path}")
+print(f"[DEBUG] Database exists: {os.path.exists(database_path)}")
+
+engine = create_engine(f'sqlite:///{database_path}')
 Session = sessionmaker(bind=engine)
 
 
 class UserRegister(Resource):
     def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('username', required=True, help='Username is required')
-        parser.add_argument('email', required=True, help='Email is required')
-        parser.add_argument('password', required=True, help='Password is required')
-        args = parser.parse_args()
+        print("[DEBUG] UserRegister POST called")
+        print(f"[DEBUG] request.data: {request.data}")
+        print(f"[DEBUG] request.content_type: {request.content_type}")
+        
+        try:
+            # 使用 request.json 来获取 JSON 请求体
+            data = request.json
+            print(f"[DEBUG] request.json result: {data}")
+            
+            if data is None:
+                print("[DEBUG] JSON data is None")
+                return {'message': 'Invalid JSON data'}, 400
 
-        session = Session()
-        # 检查用户名是否已存在
-        if session.query(User).filter_by(username=args['username']).first():
+            username = data.get('username')
+            email = data.get('email')
+            password = data.get('password')
+
+            print(f"[DEBUG] Register attempt: username={username}, email={email}")
+
+            if not username or not email or not password:
+                return {'message': 'Username, email, and password are required'}, 400
+
+            session = Session()
+            print("[DEBUG] Session created")
+            
+            # 检查用户名是否已存在
+            if session.query(User).filter_by(username=username).first():
+                session.close()
+                return {'message': 'Username already exists'}, 400
+            # 检查邮箱是否已存在
+            if session.query(User).filter_by(email=email).first():
+                session.close()
+                return {'message': 'Email already exists'}, 400
+
+            # 创建新用户
+            password_hash = generate_password_hash(password)
+            new_user = User(
+                username=username,
+                email=email,
+                password_hash=password_hash
+            )
+            session.add(new_user)
+            session.commit()
             session.close()
-            return {'message': 'Username already exists'}, 400
-        # 检查邮箱是否已存在
-        if session.query(User).filter_by(email=args['email']).first():
-            session.close()
-            return {'message': 'Email already exists'}, 400
 
-        # 创建新用户
-        password_hash = generate_password_hash(args['password'])
-        new_user = User(
-            username=args['username'],
-            email=args['email'],
-            password_hash=password_hash
-        )
-        session.add(new_user)
-        session.commit()
-        session.close()
-
-        return {'message': 'User registered successfully'}, 201
+            print(f"[DEBUG] User registered successfully: {username}")
+            return {'message': 'User registered successfully'}, 201
+        except Exception as e:
+            print(f"[DEBUG] Registration error: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'message': 'Internal Server Error'}, 500
 
 
 class UserLogin(Resource):
     def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('username', required=True, help='Username is required')
-        parser.add_argument('password', required=True, help='Password is required')
-        args = parser.parse_args()
+        try:
+            # 使用 request.json 来获取 JSON 请求体
+            data = request.json
+            if data is None:
+                return {'message': 'Invalid JSON data'}, 400
 
-        session = Session()
-        user = session.query(User).filter_by(username=args['username']).first()
-        session.close()
+            username = data.get('username')
+            password = data.get('password')
 
-        if not user or not check_password_hash(user.password_hash, args['password']):
-            return {'message': 'Invalid username or password'}, 401
+            if not username or not password:
+                return {'message': 'Username and password are required'}, 400
 
-        # 生成JWT令牌
-        token = generate_token(user.id)
-        return {'token': token, 'user_id': user.id, 'username': user.username, 'is_admin': user.is_admin}, 200
+            session = Session()
+            user = session.query(User).filter_by(username=username).first()
+            session.close()
+
+            if not user or not check_password_hash(user.password_hash, password):
+                return {'message': 'Invalid username or password'}, 401
+
+            # 生成JWT令牌
+            token = generate_token(user.id)
+            return {'token': token, 'user_id': user.id, 'username': user.username, 'is_admin': user.is_admin}, 200
+        except Exception as e:
+            print(f"[DEBUG] Login error: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'message': 'Internal Server Error'}, 500
 
 
 class UserProfile(Resource):
@@ -80,7 +127,7 @@ class UserProfile(Resource):
         if not user:
             return {'message': 'User not found'}, 404
 
-        print(f"User data: id={user.id}, username={user.username}, email={user.email}, created_at={user.created_at}")
+        print(f"[DEBUG] User data: id={user.id}, username={user.username}, email={user.email}, created_at={user.created_at}")
         try:
             created_at_str = user.created_at.isoformat() if user.created_at else None
             return {
@@ -91,7 +138,7 @@ class UserProfile(Resource):
                 'created_at': created_at_str
             }, 200
         except Exception as e:
-            print(f"Error formatting user data: {e}")
+            print(f"[DEBUG] Error formatting user data: {e}")
             return {'message': 'Error formatting user data'}, 500
 
     def put(self):

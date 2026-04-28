@@ -106,7 +106,7 @@
         <p class="result-text">正确: {{ correctCount }} | 错误: {{ wrongCount }}</p>
         <p class="accuracy">正确率: {{ accuracyPercent }}%</p>
         <div class="complete-buttons">
-          <button @click="restart" class="btn btn-primary">再学一遍</button>
+          <button @click="restart" class="btn btn-primary">再学一组</button>
           <router-link to="/wrong-words" class="btn btn-secondary">复习错题</router-link>
         </div>
       </div>
@@ -152,26 +152,16 @@ const accuracyPercent = computed(() => {
 
 const loadWords = async () => {
   try {
-    const response = await axios.get('/api/test/wrong-words', {
+    // 从词库随机抽取7个单词
+    const wordsResponse = await axios.get('/api/words', {
       headers: {
         Authorization: `Bearer ${userStore.token}`
       }
     })
-    
-    if (response.data.length > 0) {
-      words.value = response.data
-    } else {
-      // 如果没有错题，加载所有单词
-      const wordsResponse = await axios.get('/api/admin/word-bank', {
-        headers: {
-          Authorization: `Bearer ${userStore.token}`
-        }
-      })
-      // 随机选择20个单词
-      const allWords = wordsResponse.data
-      const shuffled = allWords.sort(() => 0.5 - Math.random())
-      words.value = shuffled.slice(0, 20)
-    }
+    // 随机选择7个单词
+    const allWords = wordsResponse.data
+    const shuffled = allWords.sort(() => 0.5 - Math.random())
+    words.value = shuffled.slice(0, 7)
     
     currentIndex.value = 0
     correctCount.value = 0
@@ -239,11 +229,10 @@ const addToWrongWords = async () => {
   if (!currentWord.value) return
   
   try {
-    await axios.put('/api/test/review-submit', {
+    await axios.post('/api/test/wrong-words', {
       word: currentWord.value.word,
       phonetic: currentWord.value.phonetic,
-      meaning: currentWord.value.meaning,
-      is_correct: false
+      meaning: currentWord.value.meaning
     }, {
       headers: {
         Authorization: `Bearer ${userStore.token}`
@@ -270,14 +259,8 @@ const nextWord = () => {
 }
 
 const restart = () => {
-  currentIndex.value = 0
-  correctCount.value = 0
-  wrongCount.value = 0
-  showComplete.value = false
-  isFlipped.value = false
-  lastResult.value = null
-  showSpellingResult.value = false
-  spellingInput.value = ''
+  // 重新加载新的单词
+  loadWords()
 }
 
 onMounted(() => {

@@ -18,15 +18,15 @@ def load_words_from_excel():
     
     excel_files = [
         os.path.join(database_dir, '京师小学考纲.xlsx'),
-        os.path.join(database_dir, '京师初中考纲（不含小学）.xlsx'),
-        os.path.join(database_dir, '京师高中考纲（不含初中）.xlsx')
+        os.path.join(database_dir, '京师初中考纲.xlsx'),
+        os.path.join(database_dir, '京师高中考纲.xlsx')
     ]
     
     # 学段映射
     level_map = {
         '京师小学考纲.xlsx': 'primary',
-        '京师初中考纲（不含小学）.xlsx': 'middle',
-        '京师高中考纲（不含初中）.xlsx': 'high'
+        '京师初中考纲.xlsx': 'middle',
+        '京师高中考纲.xlsx': 'high'
     }
     
     for file_path in excel_files:

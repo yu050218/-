@@ -21,7 +21,8 @@ class Word(Base):
     word = Column(String(50), nullable=False)
     phonetic = Column(String(100))
     meaning = Column(String(200), nullable=False)
-    difficulty = Column(String(20), nullable=False)  # easy, medium, hard
+    difficulty = Column(String(20), nullable=False)  # easy, medium, hard 或 primary_1, primary_2, etc.
+    level = Column(String(20))  # primary, middle, high
 
 
 class TestRecord(Base):

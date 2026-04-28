@@ -89,7 +89,7 @@ const userStore = useUserStore()
   margin-bottom: 60px;
   flex-wrap: wrap;
   gap: 30px;
-  max-width: 750px;
+  max-width: 800px;
   margin-left: auto;
   margin-right: auto;
 }
