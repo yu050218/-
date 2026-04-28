@@ -41,6 +41,19 @@
         <router-link to="/wrong-words" class="btn btn-primary" v-if="userStore.isLoggedIn">查看错题</router-link>
         <router-link to="/login" class="btn btn-secondary" v-else>登录后查看</router-link>
       </div>
+      <div class="feature-card card animate-fade-in" style="animation-delay: 0.4s">
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="6" width="15" height="14" rx="2"/>
+            <path d="M17 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2"/>
+            <path d="M7 10l5 2 5-2"/>
+          </svg>
+        </div>
+        <h2>单词卡片</h2>
+        <p>抽认卡模式学习单词，轻松记忆</p>
+        <router-link to="/cards" class="btn btn-primary" v-if="userStore.isLoggedIn">开始学习</router-link>
+        <router-link to="/login" class="btn btn-secondary" v-else>登录后学习</router-link>
+      </div>
     </div>
 
     <div v-if="userStore.isLoggedIn" class="user-stats card animate-fade-in" style="animation-delay: 0.4s">

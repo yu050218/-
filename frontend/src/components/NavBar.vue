@@ -74,6 +74,17 @@
           <span class="link-text">错题本</span>
         </router-link>
 
+        <router-link to="/cards" class="nav-link" @click="isMenuOpen = false" v-if="userStore.isLoggedIn">
+          <span class="link-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="6" width="15" height="14" rx="2"/>
+              <path d="M17 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2"/>
+              <path d="M7 10l5 2 5-2"/>
+            </svg>
+          </span>
+          <span class="link-text">单词卡片</span>
+        </router-link>
+
         <router-link to="/profile" class="nav-link" @click="isMenuOpen = false" v-if="userStore.isLoggedIn">
           <span class="link-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
