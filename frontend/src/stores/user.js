@@ -54,6 +54,21 @@ export const useUserStore = defineStore('user', {
         throw error.response.data
       }
     },
+    async updateProfile(email, password) {
+      try {
+        const response = await axios.put('/api/profile', {
+          email,
+          password
+        }, {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        })
+        return response.data
+      } catch (error) {
+        throw error.response.data
+      }
+    },
     logout() {
       this.user = null
       this.token = null
